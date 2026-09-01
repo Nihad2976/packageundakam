@@ -1,7 +1,11 @@
-const rawBase =
+let rawBase =
   import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.PROD ? 'https://packageundakam-api.onrender.com/api' : '/api')
-const API_BASE = rawBase.replace(/\/+$/, '')
+rawBase = rawBase.replace(/\/+$/, '')
+if (!rawBase.endsWith('/api') && rawBase.startsWith('http')) {
+  rawBase += '/api'
+}
+const API_BASE = rawBase
 
 function getToken() {
   return localStorage.getItem('naj_token')
