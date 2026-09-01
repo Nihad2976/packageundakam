@@ -16,6 +16,14 @@ app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
+app.get('/', (req, res) => {
+  res.send('PACKAGEUNDAKAM API is running successfully!')
+})
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', time: new Date() })
+})
+
 app.use('/api/auth', authRoutes)
 app.use('/api/quotations', quotationRoutes)
 app.use('/api/invoices', invoiceRoutes)
