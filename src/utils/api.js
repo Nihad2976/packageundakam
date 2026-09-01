@@ -1,4 +1,6 @@
-const rawBase = import.meta.env.VITE_API_BASE_URL || '/api'
+const rawBase =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? 'https://packageundakam-api.onrender.com/api' : '/api')
 const API_BASE = rawBase.replace(/\/+$/, '')
 
 function getToken() {
