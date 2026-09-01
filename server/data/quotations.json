@@ -1,0 +1,421 @@
+[
+  {
+    "id": "2b83ad67-f140-4f3e-84ae-8a2c89fec8f7",
+    "clientType": "groom",
+    "groomName": "Nihad",
+    "brideName": "",
+    "package": "without_album",
+    "price": "60000",
+    "services": [
+      {
+        "id": "couple_reel",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "function_reel",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "wedding_full_length",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "suggestion_reel",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "wedding_highlights",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "graded_photos",
+        "selected": true,
+        "quantity": 1,
+        "photoQuantity": "200+"
+      },
+      {
+        "id": "premium_album",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "mini_album",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "table_calendar",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "live_qr",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "soft_copy",
+        "selected": true,
+        "quantity": 1
+      }
+    ],
+    "coverages": [
+      {
+        "id": "bf71f571-acc6-4c3d-9961-e86466f65097",
+        "type": "wedding_nikkah",
+        "customName": "",
+        "date": "Dec 13",
+        "side": "bride",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": false,
+            "quantity": 0
+          }
+        ]
+      },
+      {
+        "id": "703388af-63c1-48e9-b2cf-adb3673d7543",
+        "type": "wedding_day",
+        "customName": "",
+        "date": "Dec 14",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": false,
+            "quantity": 0
+          }
+        ]
+      }
+    ],
+    "completed": true,
+    "createdAt": "2026-08-26T12:10:14.479Z",
+    "updatedAt": "2026-08-26T12:10:45.891Z",
+    "pdfPath": "2b83ad67-f140-4f3e-84ae-8a2c89fec8f7_Nihad_Quotation.pdf"
+  },
+  {
+    "id": "aaccebdf-5d14-44eb-a500-bab26eeb417c",
+    "clientType": "both",
+    "groomName": "Safwan",
+    "brideName": "Fidha",
+    "package": "with_album",
+    "price": "1,20,001",
+    "services": [
+      {
+        "id": "couple_reel",
+        "selected": true,
+        "quantity": 2
+      },
+      {
+        "id": "function_reel",
+        "selected": true,
+        "quantity": 2
+      },
+      {
+        "id": "wedding_full_length",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "suggestion_reel",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "wedding_highlights",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "graded_photos",
+        "selected": true,
+        "quantity": 1,
+        "photoQuantity": "400+"
+      },
+      {
+        "id": "premium_album",
+        "selected": true,
+        "quantity": 2
+      },
+      {
+        "id": "mini_album",
+        "selected": true,
+        "quantity": 2
+      },
+      {
+        "id": "table_calendar",
+        "selected": true,
+        "quantity": 2
+      },
+      {
+        "id": "live_qr",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "soft_copy",
+        "selected": true,
+        "quantity": 2
+      }
+    ],
+    "coverages": [
+      {
+        "id": "05568eeb-95eb-4684-b0e2-3e72ab803767",
+        "type": "bride_eve",
+        "customName": "",
+        "date": "Nov 6",
+        "side": "bride",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": false,
+            "quantity": 0
+          }
+        ]
+      },
+      {
+        "id": "4e728d58-320b-4e85-848a-e50a3cffc91c",
+        "type": "wedding_nikkah",
+        "customName": "",
+        "date": "Nov 7",
+        "side": "bride",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": true,
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "id": "c79c58ac-f85c-4738-9ec7-bbc4bc5bc103",
+        "type": "groom_eve",
+        "customName": "",
+        "date": "Nov 7",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": false,
+            "quantity": 0
+          }
+        ]
+      },
+      {
+        "id": "546949ce-b2ae-473c-b7b6-5ae928d0a8a9",
+        "type": "wedding_day",
+        "customName": "",
+        "date": "Nov 8",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": true,
+            "quantity": 1
+          }
+        ]
+      }
+    ],
+    "completed": true,
+    "createdAt": "2026-08-26T13:58:24.585Z",
+    "updatedAt": "2026-08-26T14:37:30.809Z",
+    "pdfPath": "aaccebdf-5d14-44eb-a500-bab26eeb417c_Safwan_Fidha_Quotation.pdf"
+  },
+  {
+    "id": "c4acd482-ddf4-4e97-9572-6691648a21e4",
+    "clientType": "bride",
+    "groomName": "",
+    "brideName": "Nihad",
+    "package": "without_album",
+    "price": "40000",
+    "services": [
+      {
+        "id": "couple_reel",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "function_reel",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "wedding_full_length",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "suggestion_reel",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "wedding_highlights",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "graded_photos",
+        "selected": true,
+        "quantity": 1,
+        "photoQuantity": "200+"
+      },
+      {
+        "id": "premium_album",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "mini_album",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "table_calendar",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "live_qr",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "soft_copy",
+        "selected": true,
+        "quantity": 1
+      }
+    ],
+    "coverages": [
+      {
+        "id": "id-1788099061556-dkldaiidx",
+        "type": "wedding_day",
+        "customName": "",
+        "date": "Dec 5",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": false,
+            "quantity": 0
+          }
+        ]
+      }
+    ],
+    "completed": true,
+    "createdAt": "2026-08-30T14:11:32.036Z",
+    "updatedAt": "2026-08-30T16:30:39.652Z",
+    "pdfPath": "c4acd482-ddf4-4e97-9572-6691648a21e4_Nihad_Quotation.pdf"
+  }
+]

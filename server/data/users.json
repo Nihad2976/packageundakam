@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ea4094d4-db43-4ecf-b6ae-0dac44de6474",
+    "name": "Nihad",
+    "email": "nihad@example.com",
+    "password": "$2b$10$o/vdf3T/dukl94FSqT2q3uCPPbCmdwjUq7b6bUxP72BD6POsYXY7O",
+    "createdAt": "2026-08-30T15:07:27.486Z",
+    "updatedAt": "2026-08-30T15:07:27.486Z"
+  },
+  {
+    "id": "3e18fef6-f132-49b2-ad10-6b418c0513f9",
+    "name": "Sanoof",
+    "email": "sanoof@example.com",
+    "password": "$2b$10$4CDjwlon83p0v21Smgfch.ota6oUjVeZiqZbDHkOzFhZRP4Y83qye",
+    "createdAt": "2026-08-30T15:07:27.567Z",
+    "updatedAt": "2026-08-30T15:07:27.567Z"
+  },
+  {
+    "id": "naj-wedding-default-user-id",
+    "name": "NAJ Wedding",
+    "email": "najwedding@gmail.com",
+    "password": "$2b$10$8T1YIbuM7kfooRYsBe7BG.8gonw8IwCZvsG2BYyw4QURkq8qi.MJu",
+    "createdAt": "2026-08-30T15:10:45.128Z",
+    "updatedAt": "2026-08-30T15:10:45.129Z"
+  }
+]
