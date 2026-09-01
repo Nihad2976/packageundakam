@@ -392,6 +392,196 @@ body {
   color: #1a1a1a;
 }
 
+.mobile-hero-card {
+  display: none;
+  background: #faf6f0;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #f2ece4;
+  margin-bottom: 20px;
+}
+
+.mobile-hero-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.mobile-hero-subtitle {
+  color: #777777;
+  font-size: 13px;
+  margin: 0 0 16px 0;
+}
+
+.mobile-hero-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-hero-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.mobile-hero-btn-quotation {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.mobile-hero-btn-invoice {
+  background: #27ae60;
+  color: #ffffff;
+}
+
+.mobile-hero-btn .btn-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Mobile Responsive Breakpoint (<768px) */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-hero-card {
+    display: block !important;
+  }
+
+  .mobile-top-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #ffffff;
+    border-bottom: 1px solid #efebe4;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    margin: 0 -16px 20px -16px;
+  }
+
+  .mobile-hamburger-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+  }
+
+  .mobile-brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .mobile-brand-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 1px;
+    color: #1a1a1a;
+    text-transform: uppercase;
+  }
+
+  .mobile-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .mobile-close-btn {
+    display: block !important;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(280px);
+  }
+
+  .mobile-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+  }
+
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .main-viewport {
+    padding: 0 16px 32px 16px;
+    width: 100%;
+  }
+
+  .dashboard-search-box {
+    width: 100%;
+  }
+
+  .controls-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .tabs-group {
+    width: 100%;
+  }
+
+  .tab-pill-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 10px;
+  }
+
+  .quotation-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 18px;
+  }
+
+  .card-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .card-action-edit,
+  .card-action-download,
+  .card-action-delete {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+}
+
 /* Dashboard Page Content */
 .dashboard {
   max-width: 900px;

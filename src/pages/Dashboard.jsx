@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../utils/api'
 import { downloadPdfBytes } from '../utils/pdf'
 import { formatCurrency } from '../components/InvoicePreview'
@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('all') // 'all' | 'quotation' | 'invoice'
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const navigate = useNavigate()
 
   const loadData = () => {
@@ -112,13 +113,48 @@ export default function Dashboard() {
 
   return (
     <div className="app-layout">
-      {/* Left Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Left Sidebar (Desktop fixed / Mobile slide-over drawer) */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
-      {/* Main Right Viewport */}
+      {/* Main Viewport */}
       <main className="main-viewport">
-        {/* Top Header Bar */}
-        <header className="top-header">
+        {/* Mobile Top Bar (Visible ONLY on mobile screens <768px) */}
+        <header className="mobile-top-bar">
+          <button
+            type="button"
+            className="mobile-hamburger-btn"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open navigation menu"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+
+          <Link to="/" className="mobile-brand-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ color: 'var(--naj-gold)' }}>
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span className="mobile-brand-title">PACKAGEUNDAKAM</span>
+          </Link>
+
+          <div className="avatar-circle mobile-avatar">
+            {getInitials(user?.name || 'NAJ Wedding')}
+          </div>
+        </header>
+
+        {/* Desktop Header Bar (Hidden on mobile) */}
+        <header className="top-header desktop-only">
           <p className="welcome-greeting">
             Welcome, {user?.name || 'User'} 👋
           </p>
@@ -136,10 +172,46 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* Dashboard Title Section */}
-        <div className="dashboard-title-header">
+        {/* Desktop Page Title (Hidden on mobile) */}
+        <div className="dashboard-title-header desktop-only">
           <h1 className="dashboard-page-title">Dashboard</h1>
           <p className="dashboard-page-subtitle">Manage your quotations and invoices</p>
+        </div>
+
+        {/* Mobile Hero Section (Visible ONLY on mobile <768px matching reference screenshot) */}
+        <div className="mobile-hero-card">
+          <h2 className="mobile-hero-title">Welcome, {user?.name || 'NAJ Wedding'} 👋</h2>
+          <p className="mobile-hero-subtitle">Manage your quotations and invoices</p>
+
+          <div className="mobile-hero-buttons">
+            <Link to="/quotation/new" className="mobile-hero-btn mobile-hero-btn-quotation">
+              <span className="btn-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <line x1="12" y1="18" x2="12" y2="12"></line>
+                  <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+                <span>+ NEW QUOTATION</span>
+              </span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </Link>
+
+            <Link to="/invoice/new" className="mobile-hero-btn mobile-hero-btn-invoice">
+              <span className="btn-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>+ NEW INVOICE</span>
+              </span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </Link>
+          </div>
         </div>
 
         {/* Controls Row: Filter Tabs & Search Bar */}
@@ -193,7 +265,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Cards Stack */}
+        {/* Record Cards Stack */}
         <div className="quotation-list">
           {loading && <p className="list-empty">Loading records...</p>}
           {!loading && displayedItems.length === 0 && (
@@ -210,7 +282,7 @@ export default function Dashboard() {
                 onClick={() => navigate(isInvoice ? `/invoice/${item.id}` : `/quotation/${item.id}`)}
                 style={{ borderLeft: isInvoice ? '4px solid #27ae60' : '4px solid #b8956a' }}
               >
-                <div className="card-main">
+                <div className="card-top-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span className={`card-badge ${isInvoice ? 'card-badge-invoice' : 'card-badge-quotation'}`}>
                       {isInvoice ? 'INVOICE' : 'QUOTATION'}
@@ -218,6 +290,21 @@ export default function Dashboard() {
                     <h3 className="card-client-name">{item.displayName}</h3>
                   </div>
 
+                  <button
+                    type="button"
+                    className="card-more-options-btn"
+                    onClick={(e) => e.stopPropagation()}
+                    title="Options"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="5" r="2"></circle>
+                      <circle cx="12" cy="12" r="2"></circle>
+                      <circle cx="12" cy="19" r="2"></circle>
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="card-main" style={{ marginTop: '8px' }}>
                   {isInvoice && item.balance !== undefined && (
                     <p style={{ fontSize: '14px', color: '#27ae60', fontWeight: '700', margin: '4px 0 2px 0' }}>
                       Balance: ₹{formatCurrency(item.balance)}
@@ -227,7 +314,7 @@ export default function Dashboard() {
                   <p className="card-date">Updated: {formatDate(item.updatedAt)}</p>
                 </div>
 
-                <div className="card-actions">
+                <div className="card-actions" style={{ marginTop: '14px' }}>
                   <button
                     type="button"
                     className="card-action-edit"
