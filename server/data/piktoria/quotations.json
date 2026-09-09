@@ -1,0 +1,129 @@
+[
+  {
+    "id": "31ce2a8f-2a34-4947-8b36-e6a4f755da49",
+    "userId": "piktoria-wedding-default-user-id",
+    "company": "piktoria",
+    "clientType": "groom",
+    "groomName": "Nihad",
+    "brideName": "",
+    "package": "with_album",
+    "price": "50000",
+    "services": [
+      {
+        "id": "reels_30s",
+        "selected": true,
+        "quantity": 2
+      },
+      {
+        "id": "graded_photos",
+        "selected": true,
+        "quantity": 1,
+        "photoQuantity": "100+"
+      },
+      {
+        "id": "wedding_highlights",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "wedding_full_length",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "piktoria_album",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "mini_album",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "photo_frame",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "calendar",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "soft_copy",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "live_qr",
+        "selected": false,
+        "quantity": 0
+      }
+    ],
+    "coverages": [
+      {
+        "id": "cc992dbd-520f-438f-8d69-e9594f49a073",
+        "type": "wedding_day",
+        "customName": "",
+        "date": "",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": true,
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "id": "e055c7da-cc3a-49a6-98a8-ecd4a3b88b96",
+        "type": "groom_eve",
+        "customName": "",
+        "date": "",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": false,
+            "quantity": 0
+          }
+        ]
+      }
+    ],
+    "completed": true,
+    "createdAt": "2026-09-09T11:06:41.947Z",
+    "updatedAt": "2026-09-09T11:06:41.947Z",
+    "pdfPath": null
+  }
+]

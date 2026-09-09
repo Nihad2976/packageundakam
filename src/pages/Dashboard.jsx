@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar'
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, company } = useAuth()
   const [quotations, setQuotations] = useState([])
   const [invoices, setInvoices] = useState([])
   const [activeTab, setActiveTab] = useState('all') // 'all' | 'quotation' | 'invoice'
@@ -111,6 +111,16 @@ export default function Dashboard() {
     return parts[0].slice(0, 2).toUpperCase()
   }
 
+  // Determine if active user is Piktoria
+  const isPiktoria =
+    company === 'piktoria' ||
+    user?.company === 'piktoria' ||
+    (user?.name || '').toLowerCase().includes('piktoria') ||
+    (user?.email || '').toLowerCase().includes('piktoria')
+
+  const currentUserName = user?.name || (isPiktoria ? 'Piktoria Weddings' : 'NAJ Wedding')
+  const userInitials = isPiktoria ? 'PW' : getInitials(currentUserName)
+
   return (
     <div className="app-layout">
       {/* Left Sidebar (Desktop fixed / Mobile slide-over drawer) */}
@@ -124,7 +134,7 @@ export default function Dashboard() {
       {/* Main Viewport */}
       <main className="main-viewport">
         {/* Mobile Top Bar (Visible ONLY on mobile screens <768px) */}
-        <header className="mobile-top-bar">
+        <header className="mobile-top-bar mobile-only">
           <button
             type="button"
             className="mobile-hamburger-btn"
@@ -148,23 +158,29 @@ export default function Dashboard() {
             <span className="mobile-brand-title">PACKAGEUNDAKAM</span>
           </Link>
 
-          <div className="avatar-circle mobile-avatar">
-            {getInitials(user?.name || 'NAJ Wedding')}
+          <div
+            className="avatar-circle mobile-avatar"
+            style={isPiktoria ? { background: '#0e3b32', color: '#ffffff', fontWeight: '700' } : {}}
+          >
+            {userInitials}
           </div>
         </header>
 
         {/* Desktop Header Bar (Hidden on mobile) */}
         <header className="top-header desktop-only">
           <p className="welcome-greeting">
-            Welcome, {user?.name || 'User'} 👋
+            Welcome, {currentUserName} 👋
           </p>
 
           <div className="user-profile-menu">
-            <div className="avatar-circle">
-              {getInitials(user?.name || 'NAJ Wedding')}
+            <div
+              className="avatar-circle"
+              style={isPiktoria ? { background: '#0e3b32', color: '#ffffff', fontWeight: '700' } : {}}
+            >
+              {userInitials}
             </div>
             <span className="user-name-text">
-              {user?.name || 'NAJ Wedding'}
+              {currentUserName}
             </span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -180,7 +196,7 @@ export default function Dashboard() {
 
         {/* Mobile Hero Section (Visible ONLY on mobile <768px matching reference screenshot) */}
         <div className="mobile-hero-card">
-          <h2 className="mobile-hero-title">Welcome, {user?.name || 'NAJ Wedding'} 👋</h2>
+          <h2 className="mobile-hero-title">Welcome, {currentUserName} 👋</h2>
           <p className="mobile-hero-subtitle">Manage your quotations and invoices</p>
 
           <div className="mobile-hero-buttons">
@@ -282,26 +298,13 @@ export default function Dashboard() {
                 onClick={() => navigate(isInvoice ? `/invoice/${item.id}` : `/quotation/${item.id}`)}
                 style={{ borderLeft: isInvoice ? '4px solid #27ae60' : '4px solid #b8956a' }}
               >
-                <div className="card-top-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <div className="card-top-row" style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span className={`card-badge ${isInvoice ? 'card-badge-invoice' : 'card-badge-quotation'}`}>
                       {isInvoice ? 'INVOICE' : 'QUOTATION'}
                     </span>
                     <h3 className="card-client-name">{item.displayName}</h3>
                   </div>
-
-                  <button
-                    type="button"
-                    className="card-more-options-btn"
-                    onClick={(e) => e.stopPropagation()}
-                    title="Options"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <circle cx="12" cy="5" r="2"></circle>
-                      <circle cx="12" cy="12" r="2"></circle>
-                      <circle cx="12" cy="19" r="2"></circle>
-                    </svg>
-                  </button>
                 </div>
 
                 <div className="card-main" style={{ marginTop: '8px' }}>

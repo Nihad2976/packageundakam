@@ -1,23 +1,124 @@
 import React from 'react'
+import { useAuth } from '../context/AuthContext'
 
 export function formatCurrency(num) {
   const n = Number(num) || 0
   return n.toLocaleString('en-IN')
 }
 
-export default function InvoicePreview({ invoice, scale = 1, id = 'invoice-render-page' }) {
-  const customerName = invoice?.customerName?.trim() || 'Sanoof'
+export default function InvoicePreview({ invoice, scale = 1, id = 'invoice-render-page', company: forcedCompany }) {
+  const { company: authCompany } = useAuth() || {}
+  const company = forcedCompany || invoice?.company || authCompany || 'naj'
+  const isPiktoria = company === 'piktoria'
+
+  const customerName = invoice?.customerName?.trim() || (isPiktoria ? 'HIBA' : 'Sanoof')
   const items = invoice?.items && invoice.items.length > 0
     ? invoice.items
-    : [
-        { name: 'Package', quantity: 1, price: 20000, total: 20000 },
-        { name: 'Save the Date', quantity: 1, price: 4000, total: 4000 },
-        { name: 'Travel', quantity: 1, price: 1000, total: 1000 },
-      ]
+    : isPiktoria
+      ? [
+          { name: 'Package', quantity: 1, price: 40000, total: 40000 },
+          { name: 'Travel', quantity: 1, price: 0, total: 0 },
+        ]
+      : [
+          { name: 'Package', quantity: 1, price: 20000, total: 20000 },
+          { name: 'Save the Date', quantity: 1, price: 4000, total: 4000 },
+          { name: 'Travel', quantity: 1, price: 1000, total: 1000 },
+        ]
 
   const subTotal = items.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.price || 0)), 0)
-  const advance = Number(invoice?.advance) || 0
+  const advance = Number(invoice?.advance) || (isPiktoria ? 2000 : 0)
   const balance = subTotal - advance
+
+  if (isPiktoria) {
+    return (
+      <div
+        id={id}
+        className="invoice-pdf-template piktoria-invoice"
+        style={{
+          transform: scale !== 1 ? `scale(${scale})` : undefined,
+          transformOrigin: 'top left',
+        }}
+      >
+        {/* Top Header Row */}
+        <header className="piktoria-inv-header">
+          <div className="piktoria-inv-monogram">PW</div>
+          <h1 className="piktoria-inv-title">INVOICE</h1>
+        </header>
+
+        {/* Invoice To Section */}
+        <section className="piktoria-inv-billed">
+          <div className="piktoria-inv-billed-label">BILLED TO:</div>
+          <div className="piktoria-inv-billed-name">{customerName}</div>
+        </section>
+
+        {/* Table */}
+        <table className="piktoria-inv-table">
+          <thead>
+            <tr>
+              <th className="col-item">Item</th>
+              <th className="col-qty">Quantity</th>
+              <th className="col-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, index) => {
+              const qty = Number(item.quantity) || 1
+              const price = Number(item.price) || 0
+              const itemTotal = qty * price
+              return (
+                <tr key={index}>
+                  <td className="col-item">{item.name || 'Item'}</td>
+                  <td className="col-qty">{qty}</td>
+                  <td className="col-total">{price > 0 ? itemTotal : '—'}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+
+        {/* Middle Row: Terms & Totals */}
+        <div className="piktoria-inv-middle-row">
+          <div className="piktoria-inv-terms-col">
+            <h4 className="piktoria-inv-terms-head">TERMS AND CONDITIONS</h4>
+            <p className="piktoria-inv-terms-body">
+              All invoices must be paid within 30 days from the date of the invoice unless otherwise agreed
+              upon in writing. Late payments may incur additional charges.
+            </p>
+          </div>
+
+          <div className="piktoria-inv-totals-col">
+            <div className="piktoria-inv-sum-row">
+              <span className="piktoria-inv-sum-label">Total</span>
+              <span className="piktoria-inv-sum-val">{subTotal}</span>
+            </div>
+            <div className="piktoria-inv-sum-row">
+              <span className="piktoria-inv-sum-label">Advance</span>
+              <span className="piktoria-inv-sum-val">{advance > 0 ? advance : '—'}</span>
+            </div>
+            <div className="piktoria-inv-divider"></div>
+            <div className="piktoria-inv-balance-row">
+              <span className="piktoria-inv-balance-label">Balance</span>
+              <span className="piktoria-inv-balance-val">₹{balance}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Row: Contact & Brand */}
+        <footer className="piktoria-inv-bottom-row">
+          <div className="piktoria-inv-contact-block">
+            <div className="piktoria-inv-contact-head">CONTACT US</div>
+            <div className="piktoria-inv-contact-line">Changarkulam,Malappuram</div>
+            <div className="piktoria-inv-contact-line">8138-075671</div>
+          </div>
+
+          <div className="piktoria-inv-brand-foot">
+            <div className="piktoria-inv-brand-name">Piktoria Weddings</div>
+            <div className="piktoria-inv-brand-tag">WEDDING COMPANY</div>
+          </div>
+        </footer>
+      </div>
+    )
+  }
 
   return (
     <div

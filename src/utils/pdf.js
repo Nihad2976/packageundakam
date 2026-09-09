@@ -1,21 +1,25 @@
 import { PDFDocument } from 'pdf-lib'
 import html2canvas from 'html2canvas'
 import sourcePdfUrl from '../assets/shahana sabir.pdf?url'
+import piktoriaPdfUrl from '../assets/PIKTORIA.pdf?url'
 
 const A4_WIDTH = 595.28
 const A4_HEIGHT = 841.89
 
-export async function generateInvoicePdf(invoiceElement) {
+export async function generateInvoicePdf(invoiceElement, company = 'naj') {
   if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
     await document.fonts.ready
   }
+
+  const isPiktoria = company === 'piktoria'
+  const bgColor = isPiktoria ? '#f7f6f0' : '#1e1e1e'
 
   const canvas = await html2canvas(invoiceElement, {
     scale: 4,
     useCORS: true,
     allowTaint: true,
     logging: false,
-    backgroundColor: '#1e1e1e',
+    backgroundColor: bgColor,
     windowWidth: 1190,
     windowHeight: 1684,
     width: 1190,
@@ -52,13 +56,14 @@ export async function generateInvoicePdf(invoiceElement) {
   return await finalDoc.save()
 }
 
-export async function generateQuotationPdf(page2Element) {
-  // Ensure all custom web fonts (Dream Avenue, Public Sans) are fully loaded
+export async function generateQuotationPdf(page2Element, company = 'naj') {
+  // Ensure all custom web fonts (Red Hat Display, Dream Avenue, Public Sans) are fully loaded
   if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
     await document.fonts.ready
   }
 
-  const sourceBytes = await fetch(sourcePdfUrl).then((r) => r.arrayBuffer())
+  const templateUrl = company === 'piktoria' ? piktoriaPdfUrl : sourcePdfUrl
+  const sourceBytes = await fetch(templateUrl).then((r) => r.arrayBuffer())
   const sourceDoc = await PDFDocument.load(sourceBytes)
   const pages = sourceDoc.getPages()
 
@@ -175,8 +180,9 @@ export function openPdfInNewTab(pdfBytes) {
   }, 60000)
 }
 
-export async function renderPdfPageAsImage(pageIndex) {
-  const sourceBytes = await fetch(sourcePdfUrl).then((r) => r.arrayBuffer())
+export async function renderPdfPageAsImage(pageIndex, company = 'naj') {
+  const templateUrl = company === 'piktoria' ? piktoriaPdfUrl : sourcePdfUrl
+  const sourceBytes = await fetch(templateUrl).then((r) => r.arrayBuffer())
   const sourceDoc = await PDFDocument.load(sourceBytes)
   const tempDoc = await PDFDocument.create()
   const [page] = await tempDoc.copyPages(sourceDoc, [pageIndex])

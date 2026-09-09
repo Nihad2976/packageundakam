@@ -7,18 +7,25 @@ import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar'
 
 export default function InvoiceForm() {
-  const { user } = useAuth()
+  const { user, company } = useAuth()
   const { id } = useParams()
   const navigate = useNavigate()
   const isNew = !id || id === 'new'
 
   const [invoiceId, setInvoiceId] = useState(isNew ? null : id)
-  const [customerName, setCustomerName] = useState('Sanoof')
-  const [items, setItems] = useState([
-    { name: 'Package', quantity: 1, price: 20000 },
-    { name: 'Travel', quantity: 1, price: 1000 },
-  ])
-  const [advance, setAdvance] = useState(10000)
+  const [customerName, setCustomerName] = useState(company === 'piktoria' ? 'HIBA' : 'Sanoof')
+  const [items, setItems] = useState(
+    company === 'piktoria'
+      ? [
+          { name: 'Package', quantity: 1, price: 40000 },
+          { name: 'Travel', quantity: 1, price: 0 },
+        ]
+      : [
+          { name: 'Package', quantity: 1, price: 20000 },
+          { name: 'Travel', quantity: 1, price: 1000 },
+        ]
+  )
+  const [advance, setAdvance] = useState(company === 'piktoria' ? 2000 : 10000)
   const [loading, setLoading] = useState(!isNew)
   const [generating, setGenerating] = useState(false)
 
@@ -80,6 +87,7 @@ export default function InvoiceForm() {
     try {
       const payload = {
         customerName: customerName.trim(),
+        company,
         items: items.map((it) => ({
           name: it.name.trim() || 'Item',
           quantity: Number(it.quantity) || 1,
@@ -104,7 +112,7 @@ export default function InvoiceForm() {
       const element = document.getElementById('invoice-render-page')
       if (!element) throw new Error('Invoice preview element not found')
 
-      const pdfBytes = await generateInvoicePdf(element)
+      const pdfBytes = await generateInvoicePdf(element, company)
       const fileName = `${customerName.trim().replace(/\s+/g, '_')}_Invoice.pdf`
       const base64 = pdfBytesToBase64(pdfBytes)
 
@@ -130,6 +138,7 @@ export default function InvoiceForm() {
 
   const invoiceData = {
     customerName,
+    company,
     items,
     subTotal,
     advance,
@@ -184,7 +193,7 @@ export default function InvoiceForm() {
               <p>Loading invoice details...</p>
             </div>
           ) : (
-            <div className="form-container" style={{ background: '#fff', borderRadius: '14px', padding: '32px', border: '1px solid #efebe4', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+            <div className="form-container invoice-form-card">
               <div className="form-content">
                 {/* 1. Invoice Details */}
                 <section className="form-section" style={{ marginBottom: '28px' }}>
@@ -222,71 +231,59 @@ export default function InvoiceForm() {
                     </button>
                   </div>
 
-                  <div className="invoice-items-table-wrapper" style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '16px' }}>
+                  <div className="invoice-items-table-wrapper">
+                    <table className="invoice-items-table">
                       <thead>
-                        <tr style={{ borderBottom: '2px solid #efebe4', textAlign: 'left', fontSize: '13px', color: '#777' }}>
-                          <th style={{ padding: '10px 8px', width: '45%' }}>Item Name</th>
-                          <th style={{ padding: '10px 8px', width: '15%', textAlign: 'center' }}>Qty</th>
-                          <th style={{ padding: '10px 8px', width: '20%' }}>Price (₹)</th>
-                          <th style={{ padding: '10px 8px', width: '15%', textAlign: 'right' }}>Total</th>
-                          <th style={{ padding: '10px 8px', width: '5%', textAlign: 'center' }}></th>
+                        <tr>
+                          <th className="th-item-name">Item Name</th>
+                          <th className="th-qty">Qty</th>
+                          <th className="th-price">Price (₹)</th>
+                          <th className="th-total">Total</th>
+                          <th className="th-action"></th>
                         </tr>
                       </thead>
                       <tbody>
                         {items.map((item, index) => {
                           const rowTotal = (Number(item.quantity) || 0) * (Number(item.price) || 0)
                           return (
-                            <tr key={index} style={{ borderBottom: '1px solid #efebe4' }}>
-                              <td style={{ padding: '8px' }}>
+                            <tr key={index}>
+                              <td className="td-item-name">
                                 <input
                                   type="text"
-                                  className="form-input"
-                                  style={{ padding: '8px 12px', fontSize: '14px' }}
-                                  placeholder="Item name (e.g. Package)"
+                                  className="form-input invoice-item-input input-item-name"
+                                  placeholder="Item name"
                                   value={item.name}
                                   onChange={(e) => handleItemChange(index, 'name', e.target.value)}
                                 />
                               </td>
-                              <td style={{ padding: '8px', textAlign: 'center' }}>
+                              <td className="td-qty">
                                 <input
                                   type="number"
                                   min="1"
-                                  className="form-input"
-                                  style={{ padding: '8px 12px', fontSize: '14px', textAlign: 'center' }}
+                                  className="form-input invoice-item-input input-qty"
                                   value={item.quantity}
                                   onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                                 />
                               </td>
-                              <td style={{ padding: '8px' }}>
+                              <td className="td-price">
                                 <input
                                   type="number"
                                   min="0"
-                                  className="form-input"
-                                  style={{ padding: '8px 12px', fontSize: '14px' }}
+                                  className="form-input invoice-item-input input-price"
                                   placeholder="Amount"
                                   value={item.price}
                                   onChange={(e) => handleItemChange(index, 'price', e.target.value)}
                                 />
                               </td>
-                              <td style={{ padding: '8px', textAlign: 'right', fontWeight: '700', fontSize: '14px', color: '#1a1a1a' }}>
-                                ₹{formatCurrency(rowTotal)}
+                              <td className="td-total">
+                                <span className="invoice-row-total">
+                                  ₹{formatCurrency(rowTotal)}
+                                </span>
                               </td>
-                              <td style={{ padding: '8px', textAlign: 'center' }}>
+                              <td className="td-action">
                                 <button
                                   type="button"
-                                  style={{
-                                    background: '#fadbd8',
-                                    color: '#e74c3c',
-                                    border: '1px solid #f5b7b1',
-                                    borderRadius: '50%',
-                                    width: '28px',
-                                    height: '28px',
-                                    padding: 0,
-                                    fontSize: '18px',
-                                    fontWeight: '700',
-                                    cursor: 'pointer',
-                                  }}
+                                  className="invoice-item-remove-btn"
                                   onClick={() => handleRemoveItem(index)}
                                   title="Delete item"
                                 >
@@ -306,7 +303,7 @@ export default function InvoiceForm() {
                   <h2 className="section-heading" style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a', marginBottom: '14px' }}>
                     3. Payment &amp; Calculations
                   </h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', background: '#faf8f5', padding: '20px', borderRadius: '10px', border: '1px solid #efebe4' }}>
+                  <div className="invoice-calculations-box" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', background: '#faf8f5', padding: '20px', borderRadius: '10px', border: '1px solid #efebe4' }}>
                     <div>
                       <label className="form-label" style={{ fontSize: '13px', color: '#777' }}>Sub Total (Auto)</label>
                       <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>
@@ -362,7 +359,7 @@ export default function InvoiceForm() {
 
       {/* Off-screen Live Render Node for html2canvas */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-        <InvoicePreview invoice={invoiceData} id="invoice-render-page" />
+        <InvoicePreview invoice={invoiceData} company={company} id="invoice-render-page" />
       </div>
     </div>
   )

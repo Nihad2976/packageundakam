@@ -2,9 +2,10 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Sidebar({ activeTab, setActiveTab }) {
-  const { logout } = useAuth()
+  const { logout, company, companyConfig } = useAuth()
   const location = useLocation()
   const isHome = location.pathname === '/'
+  const isPiktoria = company === 'piktoria'
 
   const handleNavClick = (tab) => {
     if (setActiveTab) {

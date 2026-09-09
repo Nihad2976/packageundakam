@@ -21,6 +21,7 @@ export function authMiddleware(req, res, next) {
       id: decoded.id,
       email: decoded.email,
       name: decoded.name,
+      company: decoded.company || (decoded.name?.toLowerCase().includes('piktoria') ? 'piktoria' : 'naj'),
     }
     next()
   } catch {

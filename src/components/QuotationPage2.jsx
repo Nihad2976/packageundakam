@@ -6,9 +6,15 @@ import {
   getActiveRoles,
   groupCoveragesBySide,
 } from '../utils/quotation'
-import { PAYMENT_TERMS, TEAM_ROLES, SERVICES } from '../constants/quotation'
+import { PAYMENT_TERMS, TEAM_ROLES, SERVICES, PIKTORIA_SERVICES } from '../constants/quotation'
+import { useAuth } from '../context/AuthContext'
+import piktoriaPage2Bg from '../assets/piktoria_page2_clean_bg.png'
 
-export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-page-2' }) {
+export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-page-2', company: forcedCompany }) {
+  const { company: authCompany } = useAuth() || {}
+  const company = forcedCompany || quotation?.company || authCompany || 'naj'
+  const isPiktoria = company === 'piktoria'
+
   const greeting = buildGreeting(
     quotation.clientType,
     quotation.groomName,
@@ -59,6 +65,97 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
   const hasBride = groupedCoverages.bride.length > 0
   const hasGroom = groupedCoverages.groom.length > 0
   const hasBoth = groupedCoverages.both.length > 0
+
+  if (isPiktoria) {
+    const activeCoverages = coverages.filter((c) => getActiveRoles(c).length > 0)
+
+    return (
+      <div
+        id={id}
+        className="pdf-template-page2 piktoria-theme"
+        style={{ transform: scale !== 1 ? `scale(${scale})` : undefined, transformOrigin: 'top left' }}
+      >
+        {/* Exact authentic background with outer shapes, brand header, logo and footer */}
+        <img
+          src={piktoriaPage2Bg}
+          alt=""
+          className="piktoria-page2-bg"
+          aria-hidden="true"
+        />
+
+        {/* Dynamic Page 2 Content */}
+        <div className="piktoria-page2-content">
+          {/* Client Greeting & Intro */}
+          <div className="piktoria-greeting-p">
+            <strong>{greeting}</strong>
+            <br />
+            Thank you for choosing <strong>PIKTORIA WEDDINGS</strong> to capture your special occasion. We sincerely appreciate
+            the opportunity to be a part of your beautiful and memorable moments.
+            <br />
+            Please find below the details of our services and terms. Kindly review the agreement carefully and feel
+            free to contact us should you have any questions.
+          </div>
+
+          {/* Service Overview Columns */}
+          {activeCoverages.length > 0 && (
+            <section className="piktoria-section-overview">
+              <div className="piktoria-section-heading">SERVICE OVERVIEW</div>
+              <div className="piktoria-overview-cols">
+                {activeCoverages.map((coverage) => (
+                  <div key={coverage.id} className="piktoria-event-col">
+                    <div className="piktoria-event-col-title">{getCoverageLabel(coverage)}</div>
+                    <ul className="piktoria-event-role-list">
+                      {getActiveRoles(coverage).map((role) => (
+                        <li key={role.id}>
+                          {role.quantity} {getRoleLabel(role.id)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Services & Deliverables List */}
+          <section className="piktoria-section-deliverables">
+            <div className="piktoria-section-heading-mixed">Services &amp; Deliverables</div>
+            <ul className="piktoria-deliverables-list">
+              {selectedServices.map((service) => {
+                const serviceDef =
+                  PIKTORIA_SERVICES.find((s) => s.id === service.id) ||
+                  SERVICES.find((s) => s.id === service.id)
+                const showQty = service.quantity > 1 && !serviceDef?.hasPhotoQuantity
+                return (
+                  <li key={service.id}>
+                    {service.displayName}
+                    {showQty && <span className="pdf-qty"> x{service.quantity}</span>}
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+
+          {/* Payment Terms */}
+          <section className="piktoria-payment-section">
+            <div className="piktoria-section-heading-mixed">Payment Terms</div>
+            <p className="piktoria-package-total">
+              &bull; Total Package Cost: <strong>{formatPrice(quotation.price)}</strong>
+            </p>
+            <p className="piktoria-schedule-title">Payment schedule:</p>
+            <ul className="piktoria-payment-list">
+              <li>Advance: 4% (Booking confirmation)</li>
+              <li>On Wedding Day: 66%</li>
+              <li>After Final Delivery: 30%</li>
+            </ul>
+            <p className="piktoria-payment-footnote">
+              Final deliverables (album/video/soft copy) will be released only after full payment is completed.
+            </p>
+          </section>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div

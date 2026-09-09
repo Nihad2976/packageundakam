@@ -1,0 +1,28 @@
+[
+  {
+    "id": "1272025f-fc74-4ea1-8dab-edfc8437868d",
+    "userId": "naj-wedding-default-user-id",
+    "customerName": "ABSHAR",
+    "items": [
+      {
+        "name": "Package",
+        "quantity": 1,
+        "price": 20000,
+        "total": 20000
+      },
+      {
+        "name": "Travel",
+        "quantity": 1,
+        "price": 10000,
+        "total": 10000
+      }
+    ],
+    "subTotal": 30000,
+    "advance": 10000,
+    "balance": 20000,
+    "completed": true,
+    "createdAt": "2026-08-30T15:17:39.365Z",
+    "updatedAt": "2026-08-30T15:21:16.042Z",
+    "pdfPath": "1272025f-fc74-4ea1-8dab-edfc8437868d_ABSHAR_Invoice.pdf"
+  }
+]

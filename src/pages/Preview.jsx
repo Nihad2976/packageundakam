@@ -19,7 +19,7 @@ export default function DownloadScreen({ quotation, quotationId }) {
       const element = document.getElementById('pdf-render-page-2')
       if (!element) throw new Error('Preview element not found')
 
-      const bytes = await generateQuotationPdf(element)
+      const bytes = await generateQuotationPdf(element, quotation?.company)
       const name = getPdfFileName(quotation)
       const base64 = pdfBytesToBase64(bytes)
 
@@ -123,7 +123,7 @@ export function PreviewStep({ quotation, quotationId, onEdit }) {
       const element = document.getElementById('pdf-render-page-2')
       if (!element) throw new Error('Preview element not found')
 
-      const bytes = await generateQuotationPdf(element)
+      const bytes = await generateQuotationPdf(element, quotation?.company)
       const name = getPdfFileName(quotation)
       const base64 = pdfBytesToBase64(bytes)
 

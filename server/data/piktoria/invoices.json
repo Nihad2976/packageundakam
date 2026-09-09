@@ -1,0 +1,29 @@
+[
+  {
+    "id": "f958a904-13c2-485e-953e-01b865aa586d",
+    "userId": "piktoria-wedding-default-user-id",
+    "company": "piktoria",
+    "customerName": "HIBA",
+    "items": [
+      {
+        "name": "Package",
+        "quantity": 1,
+        "price": 40000,
+        "total": 40000
+      },
+      {
+        "name": "Travel",
+        "quantity": 1,
+        "price": 0,
+        "total": 0
+      }
+    ],
+    "subTotal": 40000,
+    "advance": 2000,
+    "balance": 38000,
+    "completed": true,
+    "createdAt": "2026-09-09T12:03:28.790Z",
+    "updatedAt": "2026-09-09T12:03:32.472Z",
+    "pdfPath": "f958a904-13c2-485e-953e-01b865aa586d_HIBA_Invoice.pdf"
+  }
+]

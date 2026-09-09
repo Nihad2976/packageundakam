@@ -3,16 +3,28 @@ import fs from 'fs'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { authMiddleware } from '../middleware/auth.js'
-import { quotationsFile, uploadsDir } from '../config.js'
+import { getQuotationsFile, uploadsDir, najDataDir, piktoriaDataDir } from '../config.js'
 
 const router = Router()
 
-function readQuotations() {
-  return JSON.parse(fs.readFileSync(quotationsFile, 'utf-8'))
+function readQuotations(company = 'naj') {
+  const file = getQuotationsFile(company)
+  if (!fs.existsSync(file)) return []
+  return JSON.parse(fs.readFileSync(file, 'utf-8'))
 }
 
-function writeQuotations(data) {
-  fs.writeFileSync(quotationsFile, JSON.stringify(data, null, 2))
+function writeQuotations(company = 'naj', data = []) {
+  const file = getQuotationsFile(company)
+  fs.writeFileSync(file, JSON.stringify(data, null, 2))
+}
+
+function findQuotationAcrossCompanies(id) {
+  for (const comp of ['naj', 'piktoria']) {
+    const list = readQuotations(comp)
+    const found = list.find((q) => q.id === id)
+    if (found) return { quotation: found, company: comp }
+  }
+  return { quotation: null, company: null }
 }
 
 function getDisplayName(q) {
@@ -25,7 +37,7 @@ function getDisplayName(q) {
 }
 
 router.get('/:id/pdf', (req, res) => {
-  const quotation = readQuotations().find((q) => q.id === req.params.id)
+  const { quotation } = findQuotationAcrossCompanies(req.params.id)
   if (!quotation?.pdfPath) return res.status(404).send('PDF not found')
 
   const pdfFile = path.join(uploadsDir, quotation.pdfPath)
@@ -47,13 +59,15 @@ router.get('/:id/pdf', (req, res) => {
 router.use(authMiddleware)
 
 router.get('/', (req, res) => {
-  const quotations = readQuotations()
+  const comp = req.user.company || 'naj'
+  const quotations = readQuotations(comp)
     .filter((q) => q.completed && (!q.userId || q.userId === req.user.id))
     .map((q) => ({
       id: q.id,
       displayName: getDisplayName(q),
       updatedAt: q.updatedAt,
       userId: q.userId,
+      company: comp,
     }))
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
 
@@ -61,16 +75,19 @@ router.get('/', (req, res) => {
 })
 
 router.get('/:id', (req, res) => {
-  const quotation = readQuotations().find((q) => q.id === req.params.id)
+  const comp = req.user.company || 'naj'
+  const quotation = readQuotations(comp).find((q) => q.id === req.params.id)
   if (!quotation) return res.status(404).json({ error: 'Not found' })
   res.json(quotation)
 })
 
 router.post('/', (req, res) => {
+  const comp = req.user.company || 'naj'
   const now = new Date().toISOString()
   const quotation = {
     id: uuidv4(),
     userId: req.user.id,
+    company: comp,
     ...req.body,
     completed: req.body.completed ?? false,
     createdAt: now,
@@ -78,15 +95,16 @@ router.post('/', (req, res) => {
     pdfPath: null,
   }
 
-  const quotations = readQuotations()
+  const quotations = readQuotations(comp)
   quotations.push(quotation)
-  writeQuotations(quotations)
+  writeQuotations(comp, quotations)
 
   res.status(201).json(quotation)
 })
 
 router.put('/:id', (req, res) => {
-  const quotations = readQuotations()
+  const comp = req.user.company || 'naj'
+  const quotations = readQuotations(comp)
   const index = quotations.findIndex((q) => q.id === req.params.id)
   if (index === -1) return res.status(404).json({ error: 'Not found' })
 
@@ -94,15 +112,17 @@ router.put('/:id', (req, res) => {
     ...quotations[index],
     ...req.body,
     id: req.params.id,
+    company: comp,
     updatedAt: new Date().toISOString(),
   }
 
-  writeQuotations(quotations)
+  writeQuotations(comp, quotations)
   res.json(quotations[index])
 })
 
 router.delete('/:id', (req, res) => {
-  const quotations = readQuotations()
+  const comp = req.user.company || 'naj'
+  const quotations = readQuotations(comp)
   const index = quotations.findIndex((q) => q.id === req.params.id)
   if (index === -1) return res.status(404).json({ error: 'Not found' })
 
@@ -112,17 +132,18 @@ router.delete('/:id', (req, res) => {
     if (fs.existsSync(pdfFile)) fs.unlinkSync(pdfFile)
   }
 
-  writeQuotations(quotations)
+  writeQuotations(comp, quotations)
   res.json({ success: true })
 })
 
 router.post('/:id/pdf', (req, res) => {
+  const comp = req.user.company || 'naj'
   const { pdfBase64, fileName } = req.body
   if (!pdfBase64 || !fileName) {
     return res.status(400).json({ error: 'PDF data required' })
   }
 
-  const quotations = readQuotations()
+  const quotations = readQuotations(comp)
   const index = quotations.findIndex((q) => q.id === req.params.id)
   if (index === -1) return res.status(404).json({ error: 'Not found' })
 
@@ -140,11 +161,12 @@ router.post('/:id/pdf', (req, res) => {
   quotations[index] = {
     ...existing,
     pdfPath: storedName,
+    company: comp,
     completed: true,
     updatedAt: new Date().toISOString(),
   }
 
-  writeQuotations(quotations)
+  writeQuotations(comp, quotations)
   res.json({ pdfPath: storedName, fileName: safeName })
 })
 

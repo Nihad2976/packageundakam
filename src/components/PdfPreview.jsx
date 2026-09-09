@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react'
 import QuotationPage2 from './QuotationPage2'
 import { renderPdfPageAsImage } from '../utils/pdf'
+import { useAuth } from '../context/AuthContext'
 
 export default function PdfPreview({ quotation, page2Ref }) {
+  const { company: authCompany } = useAuth() || {}
+  const company = quotation?.company || authCompany || 'naj'
   const [page1Url, setPage1Url] = useState(null)
   const [page3Url, setPage3Url] = useState(null)
 
   useEffect(() => {
     let url1, url3
-    renderPdfPageAsImage(0).then((url) => {
+    renderPdfPageAsImage(0, company).then((url) => {
       url1 = url
       setPage1Url(url)
     })
-    renderPdfPageAsImage(2).then((url) => {
+    renderPdfPageAsImage(2, company).then((url) => {
       url3 = url
       setPage3Url(url)
     })
@@ -21,7 +24,7 @@ export default function PdfPreview({ quotation, page2Ref }) {
       if (url1) URL.revokeObjectURL(url1)
       if (url3) URL.revokeObjectURL(url3)
     }
-  }, [])
+  }, [company])
 
   return (
     <div className="pdf-preview">

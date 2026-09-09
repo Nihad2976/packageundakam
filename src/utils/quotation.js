@@ -3,6 +3,9 @@ import {
   PACKAGES,
   PACKAGE_PRESETS,
   SERVICES,
+  PIKTORIA_SERVICES,
+  getServicesForCompany,
+  getPackagePresetsForCompany,
   DEFAULT_PHOTO_QUANTITY,
   COVERAGE_TYPES,
   COVERAGE_LABELS,
@@ -65,25 +68,30 @@ export function formatPrice(price) {
   return `₹${num.toLocaleString('en-IN')}`
 }
 
-export function createServiceSelection(serviceId, quantity = 1) {
-  const service = SERVICES.find((s) => s.id === serviceId)
+export function createServiceSelection(serviceId, quantity = 1, company = 'naj') {
+  const allServices = [...SERVICES, ...PIKTORIA_SERVICES]
+  const service = allServices.find((s) => s.id === serviceId)
   return {
     id: serviceId,
     selected: true,
     quantity,
-    photoQuantity: service?.hasPhotoQuantity ? DEFAULT_PHOTO_QUANTITY : undefined,
+    photoQuantity: service?.hasPhotoQuantity ? (company === 'piktoria' ? '100+' : DEFAULT_PHOTO_QUANTITY) : undefined,
+    leafCount: service?.hasLeafCount ? (company === 'piktoria' ? 40 : 30) : undefined,
   }
 }
 
-export function buildPresetServices(packageType) {
-  const presetIds = PACKAGE_PRESETS[packageType] || []
-  return SERVICES.map((service) => {
+export function buildPresetServices(packageType, company = 'naj') {
+  const serviceList = getServicesForCompany(company)
+  const presets = getPackagePresetsForCompany(company)
+  const presetIds = presets[packageType] || []
+  return serviceList.map((service) => {
     const isSelected = presetIds.includes(service.id)
     return {
       id: service.id,
       selected: isSelected,
       quantity: isSelected ? 1 : 0,
-      photoQuantity: service.hasPhotoQuantity ? DEFAULT_PHOTO_QUANTITY : undefined,
+      photoQuantity: service.hasPhotoQuantity ? (company === 'piktoria' ? '100+' : DEFAULT_PHOTO_QUANTITY) : undefined,
+      leafCount: service.hasLeafCount ? (company === 'piktoria' ? 40 : 30) : undefined,
     }
   })
 }
@@ -122,34 +130,46 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
   }
 }
 
-export function createEmptyQuotation() {
+export function createEmptyQuotation(company = 'naj') {
   return {
     clientType: CLIENT_TYPES.BOTH,
     groomName: '',
     brideName: '',
     package: PACKAGES.WITH_ALBUM,
     price: '',
-    services: buildPresetServices(PACKAGES.WITH_ALBUM),
+    services: buildPresetServices(PACKAGES.WITH_ALBUM, company),
     coverages: [],
     completed: false,
+    company,
   }
 }
 
-export function getServiceDisplayName(serviceId, photoQuantity) {
-  const service = SERVICES.find((s) => s.id === serviceId)
+export function getServiceDisplayName(serviceId, photoQuantity, leafCount) {
+  const allServices = [...SERVICES, ...PIKTORIA_SERVICES]
+  const service = allServices.find((s) => s.id === serviceId)
   if (!service) return ''
   if (service.hasPhotoQuantity && photoQuantity) {
     return `${photoQuantity} ${service.name}`
+  }
+  if (service.hasLeafCount || serviceId === 'piktoria_album' || serviceId === 'premium_album') {
+    const leaves = leafCount || service.defaultLeaves || (serviceId === 'piktoria_album' ? 40 : 30)
+    if (serviceId === 'piktoria_album') {
+      return `${leaves}-Leaf Wedding Album`
+    }
+    if (serviceId === 'premium_album') {
+      return `${leaves} Leaf Premium Album`
+    }
   }
   return service.name
 }
 
 export function getSelectedServices(services) {
+  if (!Array.isArray(services)) return []
   return services
     .filter((s) => s.selected && s.quantity > 0)
     .map((s) => ({
       ...s,
-      displayName: getServiceDisplayName(s.id, s.photoQuantity),
+      displayName: getServiceDisplayName(s.id, s.photoQuantity, s.leafCount),
     }))
 }
 

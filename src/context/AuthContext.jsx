@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { api, setToken, clearToken, isLoggedIn } from '../utils/api'
+import { getCompanyFromUser, COMPANY_CONFIGS, COMPANIES } from '../constants/companies'
 
 const AuthContext = createContext(null)
 
@@ -7,6 +8,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [authenticated, setAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  const company = user ? getCompanyFromUser(user) : COMPANIES.NAJ
+  const companyConfig = COMPANY_CONFIGS[company] || COMPANY_CONFIGS[COMPANIES.NAJ]
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -51,7 +55,9 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, authenticated, loading, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{ user, company, companyConfig, authenticated, loading, login, signup, logout }}
+    >
       {children}
     </AuthContext.Provider>
   )
@@ -60,3 +66,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext)
 }
+

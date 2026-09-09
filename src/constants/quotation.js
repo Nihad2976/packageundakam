@@ -67,11 +67,29 @@ export const SERVICES = [
     category: 'photo',
     hasPhotoQuantity: true,
   },
-  { id: 'premium_album', name: '30 Leaf Premium Album', category: 'photo' },
+  { id: 'premium_album', name: '30 Leaf Premium Album', category: 'photo', hasLeafCount: true, defaultLeaves: 30 },
   { id: 'mini_album', name: 'Mini Album', category: 'photo' },
   { id: 'table_calendar', name: 'Table Calendar', category: 'photo' },
   { id: 'live_qr', name: 'Live QR Code Photo Gallery (Day & Reception)', category: 'other' },
   { id: 'soft_copy', name: 'Soft Copy (Provided via Pendrive)', category: 'other' },
+]
+
+export const LEAF_OPTIONS = [25, 30, 35, 40, 45, 50]
+
+export const PIKTORIA_SERVICES = [
+  { id: 'reels_30s', name: 'Reels – 30 Seconds', category: 'video' },
+  {
+    id: 'graded_photos',
+    name: '100+ Professionally Edited Photos – Digital Album',
+    category: 'photo',
+    hasPhotoQuantity: true,
+  },
+  { id: 'wedding_highlights', name: 'Wedding Highlights Video – 3–5 Minutes', category: 'video' },
+  { id: 'piktoria_album', name: '40-Leaf Wedding Album', category: 'photo', hasLeafCount: true, defaultLeaves: 40 },
+  { id: 'mini_album', name: 'Mini Photo Album', category: 'photo' },
+  { id: 'photo_frame', name: 'Photo Frame', category: 'photo' },
+  { id: 'calendar', name: 'Calendar', category: 'photo' },
+  { id: 'soft_copy', name: 'Soft Copy – Pen Drive or Cloud Drive (Client’s Choice)', category: 'other' },
 ]
 
 export const PACKAGE_PRESETS = {
@@ -93,6 +111,38 @@ export const PACKAGE_PRESETS = {
     'soft_copy',
   ],
 }
+
+export const PIKTORIA_PACKAGE_PRESETS = {
+  [PACKAGES.WITH_ALBUM]: [
+    'reels_30s',
+    'graded_photos',
+    'wedding_highlights',
+    'piktoria_album',
+    'mini_album',
+    'photo_frame',
+    'calendar',
+    'soft_copy',
+  ],
+  [PACKAGES.WITHOUT_ALBUM]: [
+    'reels_30s',
+    'graded_photos',
+    'wedding_highlights',
+    'photo_frame',
+    'calendar',
+    'soft_copy',
+  ],
+}
+
+export function getServicesForCompany(company) {
+  if (company === 'piktoria') return PIKTORIA_SERVICES
+  return SERVICES
+}
+
+export function getPackagePresetsForCompany(company) {
+  if (company === 'piktoria') return PIKTORIA_PACKAGE_PRESETS
+  return PACKAGE_PRESETS
+}
+
 
 export const PAYMENT_TERMS = [
   'Advance: 4% (Booking confirmation)',

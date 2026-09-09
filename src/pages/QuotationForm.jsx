@@ -11,8 +11,11 @@ import {
   COVERAGE_SIDES,
   COVERAGE_SIDE_LABELS,
   SERVICES,
+  getServicesForCompany,
+  getPackagePresetsForCompany,
   TEAM_ROLES,
   FORM_STEPS,
+  LEAF_OPTIONS,
 } from '../constants/quotation'
 import {
   createEmptyQuotation,
@@ -318,11 +321,14 @@ function CoverageStep({ data, onChange }) {
   )
 }
 
-function ServicesStep({ data, onChange }) {
+function ServicesStep({ data, onChange, company }) {
+  const currentCompany = data.company || company || 'naj'
+  const serviceList = getServicesForCompany(currentCompany)
+
   const handlePackageChange = (pkg) => {
     onChange({
       package: pkg,
-      services: buildPresetServices(pkg),
+      services: buildPresetServices(pkg, currentCompany),
     })
   }
 
@@ -348,15 +354,30 @@ function ServicesStep({ data, onChange }) {
     })
   }
 
+  const setLeafCount = (serviceId, leafCount) => {
+    onChange({
+      services: data.services.map((s) => (s.id === serviceId ? { ...s, leafCount: Number(leafCount) } : s)),
+    })
+  }
+
   const grouped = {
-    video: SERVICES.filter((s) => s.category === 'video'),
-    photo: SERVICES.filter((s) => s.category === 'photo'),
-    other: SERVICES.filter((s) => s.category === 'other'),
+    video: serviceList.filter((s) => s.category === 'video'),
+    photo: serviceList.filter((s) => s.category === 'photo'),
+    other: serviceList.filter((s) => s.category === 'other'),
   }
 
   const renderService = (serviceDef) => {
     const service = data.services.find((s) => s.id === serviceDef.id)
     if (!service) return null
+
+    const currentLeaves = service.leafCount || serviceDef.defaultLeaves || (currentCompany === 'piktoria' ? 40 : 30)
+
+    let displayName = serviceDef.name
+    if (serviceDef.hasLeafCount) {
+      displayName = currentCompany === 'piktoria'
+        ? `${currentLeaves}-Leaf Wedding Album`
+        : `${currentLeaves} Leaf Premium Album`
+    }
 
     return (
       <div key={serviceDef.id} className="service-row">
@@ -366,11 +387,11 @@ function ServicesStep({ data, onChange }) {
             checked={service.selected}
             onChange={() => toggleService(serviceDef.id)}
           />
-          {serviceDef.name}
+          {displayName}
         </label>
         {service.selected && (
           <div className="service-controls">
-            {serviceDef.hasPhotoQuantity ? (
+            {serviceDef.hasPhotoQuantity && (
               <input
                 type="text"
                 className="photo-qty-input"
@@ -378,7 +399,22 @@ function ServicesStep({ data, onChange }) {
                 onChange={(e) => setPhotoQuantity(serviceDef.id, e.target.value)}
                 placeholder="e.g. 200+"
               />
-            ) : (
+            )}
+            {serviceDef.hasLeafCount && (
+              <select
+                className="leaf-select"
+                value={currentLeaves}
+                onChange={(e) => setLeafCount(serviceDef.id, e.target.value)}
+                title="Select number of leaves"
+              >
+                {LEAF_OPTIONS.map((leaves) => (
+                  <option key={leaves} value={leaves}>
+                    {leaves} Leafs
+                  </option>
+                ))}
+              </select>
+            )}
+            {!serviceDef.hasPhotoQuantity && (
               <QuantityControl
                 value={service.quantity}
                 onChange={(qty) => setQuantity(serviceDef.id, qty)}
@@ -458,7 +494,7 @@ function PriceStep({ data, onChange }) {
 }
 
 export default function QuotationForm() {
-  const { user } = useAuth()
+  const { user, company } = useAuth()
   const { id } = useParams()
   const isNew = !id || id === 'new'
   const navigate = useNavigate()
@@ -466,14 +502,14 @@ export default function QuotationForm() {
 
   const [currentStep, setCurrentStep] = useState(0)
   const [maxStep, setMaxStep] = useState(0)
-  const [data, setData] = useState(createEmptyQuotation())
+  const [data, setData] = useState(() => createEmptyQuotation(company))
   const [quotationId, setQuotationId] = useState(null)
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (isNew) {
-      setData(createEmptyQuotation())
+      setData(createEmptyQuotation(company))
       setQuotationId(null)
       setCurrentStep(0)
       setMaxStep(0)
@@ -494,13 +530,14 @@ export default function QuotationForm() {
           services: q.services,
           coverages: q.coverages || [],
           completed: q.completed,
+          company: q.company || company,
         })
         setQuotationId(q.id)
         setMaxStep(FORM_STEPS.length - 1)
       })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
-  }, [id, isNew, navigate])
+  }, [id, isNew, navigate, company])
 
   const updateData = useCallback(
     (updates) => {
@@ -584,11 +621,11 @@ export default function QuotationForm() {
     <ClientStep key="client" data={data} onChange={updateData} />,
     <PackageStep key="package" data={data} onChange={updateData} />,
     <CoverageStep key="coverage" data={data} onChange={updateData} />,
-    <ServicesStep key="services" data={data} onChange={updateData} />,
+    <ServicesStep key="services" data={data} onChange={updateData} company={company} />,
     <PriceStep key="price" data={data} onChange={updateData} />,
     <PreviewStep
       key="preview"
-      quotation={data}
+      quotation={{ ...data, company: data.company || company }}
       quotationId={quotationId}
       onEdit={() => setCurrentStep(4)}
     />,

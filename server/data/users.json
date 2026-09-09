@@ -5,7 +5,8 @@
     "email": "nihad@example.com",
     "password": "$2b$10$o/vdf3T/dukl94FSqT2q3uCPPbCmdwjUq7b6bUxP72BD6POsYXY7O",
     "createdAt": "2026-08-30T15:07:27.486Z",
-    "updatedAt": "2026-08-30T15:07:27.486Z"
+    "updatedAt": "2026-08-30T15:07:27.486Z",
+    "company": "naj"
   },
   {
     "id": "3e18fef6-f132-49b2-ad10-6b418c0513f9",
@@ -13,7 +14,8 @@
     "email": "sanoof@example.com",
     "password": "$2b$10$4CDjwlon83p0v21Smgfch.ota6oUjVeZiqZbDHkOzFhZRP4Y83qye",
     "createdAt": "2026-08-30T15:07:27.567Z",
-    "updatedAt": "2026-08-30T15:07:27.567Z"
+    "updatedAt": "2026-08-30T15:07:27.567Z",
+    "company": "naj"
   },
   {
     "id": "naj-wedding-default-user-id",
@@ -21,6 +23,17 @@
     "email": "najwedding@gmail.com",
     "password": "$2b$10$8T1YIbuM7kfooRYsBe7BG.8gonw8IwCZvsG2BYyw4QURkq8qi.MJu",
     "createdAt": "2026-08-30T15:10:45.128Z",
-    "updatedAt": "2026-08-30T15:10:45.129Z"
+    "updatedAt": "2026-08-30T15:10:45.129Z",
+    "company": "naj"
+  },
+  {
+    "id": "piktoria-wedding-default-user-id",
+    "name": "Piktoria Weddings",
+    "email": "piktoria@gmail.com",
+    "username": "piktoria",
+    "company": "piktoria",
+    "password": "$2b$10$G9gqb0LvD8vgQUFd.cEcBOAVEpB1/svmWuZYrZDwQyUxdij19SJTS",
+    "createdAt": "2026-09-09T10:55:12.170Z",
+    "updatedAt": "2026-09-09T10:55:12.171Z"
   }
 ]
