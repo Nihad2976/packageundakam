@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
   const { logout, company, companyConfig } = useAuth()
   const location = useLocation()
   const isHome = location.pathname === '/'
@@ -11,32 +11,61 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     if (setActiveTab) {
       setActiveTab(tab)
     }
+    if (onClose) {
+      onClose()
+    }
   }
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-top">
-        {/* Brand Logo Header */}
-        <Link to="/" className="sidebar-logo">
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ color: 'var(--naj-gold)' }}
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-          <span className="sidebar-brand-name">PACKAGEUNDAKAM</span>
-        </Link>
+    <>
+      {/* Mobile Drawer Backdrop */}
+      {isOpen && (
+        <div
+          className="mobile-backdrop"
+          onClick={onClose}
+          aria-label="Close navigation drawer"
+        />
+      )}
+
+      <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-top">
+          {/* Brand Logo Header & Mobile Close Button */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <Link to="/" className="sidebar-logo" style={{ marginBottom: 0 }} onClick={() => onClose && onClose()}>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ color: 'var(--naj-gold)' }}
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <span className="sidebar-brand-name">PACKAGEUNDAKAM</span>
+            </Link>
+
+            {onClose && (
+              <button
+                type="button"
+                className="mobile-close-btn"
+                onClick={onClose}
+                aria-label="Close navigation menu"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            )}
+          </div>
 
         {!isHome ? (
           /* Minimal Form View: Only Home Menu button */
@@ -126,7 +155,14 @@ export default function Sidebar({ activeTab, setActiveTab }) {
       </div>
 
       <div className="sidebar-bottom">
-        <button type="button" className="sidebar-nav-item logout-nav-item" onClick={logout}>
+        <button
+          type="button"
+          className="sidebar-nav-item logout-nav-item"
+          onClick={() => {
+            if (onClose) onClose()
+            logout()
+          }}
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
@@ -136,5 +172,6 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         </button>
       </div>
     </aside>
+    </>
   )
 }

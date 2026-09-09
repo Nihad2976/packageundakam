@@ -425,6 +425,20 @@ body {
   align-items: center;
 }
 
+.mobile-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-logout-btn {
+  display: none;
+}
+
+.mobile-close-btn {
+  display: none;
+}
+
 .mobile-hero-card {
   display: none;
   background: #faf6f0;
@@ -539,8 +553,37 @@ body {
     font-size: 12px;
   }
 
+  .mobile-logout-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    background: #fdf2f2;
+    color: #e74c3c;
+    border: 1px solid #fadbd8;
+    border-radius: 7px;
+    padding: 5px 9px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.15s ease;
+  }
+
+  .mobile-logout-btn:hover,
+  .mobile-logout-btn:active {
+    background: #fadbd8;
+  }
+
   .mobile-close-btn {
-    display: block !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    color: #555555;
+    border-radius: 6px;
   }
 
   .sidebar {

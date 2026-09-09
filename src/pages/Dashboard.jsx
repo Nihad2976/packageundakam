@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar'
 
 export default function Dashboard() {
-  const { user, company } = useAuth()
+  const { user, company, logout } = useAuth()
   const [quotations, setQuotations] = useState([])
   const [invoices, setInvoices] = useState([])
   const [activeTab, setActiveTab] = useState('all') // 'all' | 'quotation' | 'invoice'
@@ -158,11 +158,29 @@ export default function Dashboard() {
             <span className="mobile-brand-title">PACKAGEUNDAKAM</span>
           </Link>
 
-          <div
-            className="avatar-circle mobile-avatar"
-            style={isPiktoria ? { background: '#0e3b32', color: '#ffffff', fontWeight: '700' } : {}}
-          >
-            {userInitials}
+          <div className="mobile-header-right">
+            <div
+              className="avatar-circle mobile-avatar"
+              style={isPiktoria ? { background: '#0e3b32', color: '#ffffff', fontWeight: '700' } : {}}
+              title={currentUserName}
+            >
+              {userInitials}
+            </div>
+
+            <button
+              type="button"
+              className="mobile-logout-btn"
+              onClick={logout}
+              title="Log Out"
+              aria-label="Log Out"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Logout</span>
+            </button>
           </div>
         </header>
 
@@ -172,7 +190,12 @@ export default function Dashboard() {
             Welcome, {currentUserName} 👋
           </p>
 
-          <div className="user-profile-menu">
+          <div
+            className="user-profile-menu"
+            onClick={logout}
+            title="Click to Log Out"
+            style={{ cursor: 'pointer' }}
+          >
             <div
               className="avatar-circle"
               style={isPiktoria ? { background: '#0e3b32', color: '#ffffff', fontWeight: '700' } : {}}
