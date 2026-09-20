@@ -5,6 +5,7 @@ import { downloadPdfBytes } from '../utils/pdf'
 import { formatCurrency } from '../components/InvoicePreview'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar'
+import MonthlyReminderBanner from '../components/MonthlyReminderBanner'
 
 export default function Dashboard() {
   const { user, company, logout } = useAuth()
@@ -262,6 +263,9 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
+
+        {/* In-app Monthly Subscription Payment Reminder Banner */}
+        <MonthlyReminderBanner user={user} />
 
         {/* Controls Row: Filter Tabs & Search Bar */}
         <div className="controls-row">

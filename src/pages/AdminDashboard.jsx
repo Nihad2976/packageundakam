@@ -36,8 +36,33 @@ export default function AdminDashboard() {
     targetStatus: null,
   })
 
+  // Modal State for Editing Reminder Email
+  const [emailModal, setEmailModal] = useState({
+    isOpen: false,
+    company: null,
+    email: '',
+  })
+
+  // Modal State for Sending Reminder Email
+  const [reminderModal, setReminderModal] = useState({
+    isOpen: false,
+    company: null,
+    recipientEmail: '',
+    sending: false,
+  })
+
   // Action Loading State
   const [processingId, setProcessingId] = useState(null)
+
+  // Toast notification feedback
+  const [toast, setToast] = useState({ message: '', type: 'success' })
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => {
+      setToast({ message: '', type: 'success' })
+    }, 4500)
+  }
 
   const loadCompanies = async () => {
     try {
@@ -99,6 +124,79 @@ export default function AdminDashboard() {
       alert(err.message || 'Failed to update payment status')
     } finally {
       setProcessingId(null)
+    }
+  }
+
+  const handleOpenEditEmail = (comp) => {
+    setEmailModal({
+      isOpen: true,
+      company: comp,
+      email: comp.reminderEmail || comp.email || '',
+    })
+  }
+
+  const handleSaveEmail = async () => {
+    if (!emailModal.company || !emailModal.email.trim()) return
+    try {
+      setProcessingId(emailModal.company.id)
+      await api.updateCompanyEmail(emailModal.company.id, {
+        reminderEmail: emailModal.email.trim(),
+      })
+      showToast(`Reminder email updated for ${emailModal.company.name}`)
+      setEmailModal({ isOpen: false, company: null, email: '' })
+      await loadCompanies()
+    } catch (err) {
+      alert(err.message || 'Failed to update reminder email')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleOpenReminderModal = (comp) => {
+    setReminderModal({
+      isOpen: true,
+      company: comp,
+      recipientEmail: comp.reminderEmail || comp.email || '',
+      sending: false,
+    })
+  }
+
+  const handleSendReminder = async () => {
+    const { company, recipientEmail } = reminderModal
+    if (!company || !recipientEmail.trim()) return
+
+    try {
+      setReminderModal((prev) => ({ ...prev, sending: true }))
+      const res = await api.sendCompanyReminder(company.id, recipientEmail.trim())
+      setReminderModal({ isOpen: false, company: null, recipientEmail: '', sending: false })
+      showToast(`Reminder email dispatched to ${res.sentTo || recipientEmail}`)
+      await loadCompanies()
+    } catch (err) {
+      alert(err.message || 'Failed to send reminder email')
+      setReminderModal((prev) => ({ ...prev, sending: false }))
+    }
+  }
+
+  const handleRemindAllUnpaid = async () => {
+    const unpaidList = companies.filter((c) => c.status !== 'blocked' && c.paymentStatus === 'unpaid')
+    if (unpaidList.length === 0) {
+      alert('No unpaid active companies found.')
+      return
+    }
+
+    if (!window.confirm(`Send subscription reminder email to all ${unpaidList.length} unpaid company accounts?`)) {
+      return
+    }
+
+    try {
+      setLoading(true)
+      const res = await api.sendAllUnpaidReminders()
+      showToast(`Dispatched reminders to ${res.count} unpaid companies!`)
+      await loadCompanies()
+    } catch (err) {
+      alert(err.message || 'Failed to send unpaid reminders')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -229,6 +327,22 @@ export default function AdminDashboard() {
             >
               Refresh
             </button>
+
+            {unpaidCount > 0 && (
+              <button
+                type="button"
+                className="btn btn-warning btn-sm"
+                onClick={handleRemindAllUnpaid}
+                title="Send monthly subscription reminder email to all unpaid companies"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span>Remind Unpaid ({unpaidCount})</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -257,7 +371,7 @@ export default function AdminDashboard() {
                   <tr>
                     <th>Company</th>
                     <th>Account / Username</th>
-                    <th>Email</th>
+                    <th>Reminder Recipient</th>
                     <th>Last Used (Generator)</th>
                     <th>Monthly Payment</th>
                     <th>Account Status</th>
@@ -269,6 +383,7 @@ export default function AdminDashboard() {
                     const isBlocked = comp.status === 'blocked'
                     const isPaid = comp.paymentStatus === 'paid'
                     const isProcessing = processingId === comp.id
+                    const reminderTarget = comp.reminderEmail || comp.email
 
                     return (
                       <tr key={comp.id} className={isBlocked ? 'row-blocked' : ''}>
@@ -284,7 +399,35 @@ export default function AdminDashboard() {
                         </td>
 
                         <td>
-                          <span className="admin-email-text">{comp.email}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="admin-email-text">{reminderTarget}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditEmail(comp)}
+                              title="Change email address to send reminders"
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.08)',
+                                border: 'none',
+                                borderRadius: '4px',
+                                padding: '2px 6px',
+                                color: '#94a3b8',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = '#fbbf24')}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
+                            >
+                              ✎ Change
+                            </button>
+                          </div>
+                          {comp.lastReminderSent && (
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }}>
+                              Sent: {formatDateTime(comp.lastReminderSent)}
+                            </div>
+                          )}
                         </td>
 
                         <td>
@@ -321,25 +464,42 @@ export default function AdminDashboard() {
                         </td>
 
                         <td style={{ textAlign: 'right' }}>
-                          {isBlocked ? (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
                             <button
                               type="button"
-                              className="btn btn-unblock btn-sm"
+                              className="btn btn-secondary btn-sm"
                               disabled={isProcessing}
-                              onClick={() => handleOpenConfirm(comp, 'active')}
+                              onClick={() => handleOpenReminderModal(comp)}
+                              title="Send subscription reminder email"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                             >
-                              Unblock
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                              </svg>
+                              <span>Remind</span>
                             </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn btn-block btn-sm"
-                              disabled={isProcessing}
-                              onClick={() => handleOpenConfirm(comp, 'blocked')}
-                            >
-                              Block
-                            </button>
-                          )}
+
+                            {isBlocked ? (
+                              <button
+                                type="button"
+                                className="btn btn-unblock btn-sm"
+                                disabled={isProcessing}
+                                onClick={() => handleOpenConfirm(comp, 'active')}
+                              >
+                                Unblock
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn btn-block btn-sm"
+                                disabled={isProcessing}
+                                onClick={() => handleOpenConfirm(comp, 'blocked')}
+                              >
+                                Block
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )
@@ -395,6 +555,134 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Edit Reminder Email Modal */}
+      {emailModal.isOpen && emailModal.company && (
+        <div className="modal-backdrop" onClick={() => setEmailModal({ isOpen: false, company: null, email: '' })}>
+          <div className="modal-content admin-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-confirm-header">
+              <h3>Change Reminder Email</h3>
+            </div>
+            <div className="admin-confirm-body">
+              <p>
+                Set the email address where monthly reminders will be sent for <strong>{emailModal.company.name}</strong>:
+              </p>
+              <div style={{ marginTop: '14px' }}>
+                <input
+                  type="email"
+                  className="admin-search-input"
+                  value={emailModal.email}
+                  onChange={(e) => setEmailModal((prev) => ({ ...prev, email: e.target.value }))}
+                  placeholder="company@example.com"
+                  autoFocus
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+            <div className="admin-confirm-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setEmailModal({ isOpen: false, company: null, email: '' })}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSaveEmail}
+                disabled={!emailModal.email.trim() || processingId === emailModal.company.id}
+              >
+                Save Email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Send Reminder Modal */}
+      {reminderModal.isOpen && reminderModal.company && (
+        <div
+          className="modal-backdrop"
+          onClick={() => !reminderModal.sending && setReminderModal({ isOpen: false, company: null, recipientEmail: '', sending: false })}
+        >
+          <div className="modal-content admin-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-confirm-header">
+              <h3>Send Subscription Reminder</h3>
+            </div>
+            <div className="admin-confirm-body">
+              <p>
+                Send monthly subscription reminder email to <strong>{reminderModal.company.name}</strong>.
+              </p>
+              <div style={{ marginTop: '14px', marginBottom: '8px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                  Recipient Email (You can edit before sending):
+                </label>
+                <input
+                  type="email"
+                  className="admin-search-input"
+                  value={reminderModal.recipientEmail}
+                  onChange={(e) => setReminderModal((prev) => ({ ...prev, recipientEmail: e.target.value }))}
+                  placeholder="recipient@example.com"
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                  disabled={reminderModal.sending}
+                />
+              </div>
+              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '8px' }}>
+                Payment Status: <strong style={{ color: reminderModal.company.paymentStatus === 'paid' ? '#34d399' : '#f87171' }}>
+                  {reminderModal.company.paymentStatus.toUpperCase()}
+                </strong>
+                {reminderModal.company.lastReminderSent && (
+                  <span> &bull; Last reminder sent: {formatDateTime(reminderModal.company.lastReminderSent)}</span>
+                )}
+              </p>
+            </div>
+            <div className="admin-confirm-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={reminderModal.sending}
+                onClick={() => setReminderModal({ isOpen: false, company: null, recipientEmail: '', sending: false })}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSendReminder}
+                disabled={reminderModal.sending || !reminderModal.recipientEmail.trim()}
+              >
+                {reminderModal.sending ? 'Sending...' : 'Send Email Now'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Feedback */}
+      {toast.message && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            background: '#1e293b',
+            color: '#f8fafc',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            padding: '12px 20px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '14px',
+          }}
+        >
+          <span style={{ color: '#38bdf8', fontWeight: 700 }}>✓</span>
+          <span>{toast.message}</span>
         </div>
       )}
     </div>

@@ -8,6 +8,7 @@ import quotationRoutes from './routes/quotations.js'
 import invoiceRoutes from './routes/invoices.js'
 import adminRoutes from './routes/admin.js'
 import './config.js'
+import { initReminderScheduler } from './services/reminderScheduler.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -36,4 +37,5 @@ app.use('/api/admin', adminRoutes)
 
 app.listen(PORT, () => {
   console.log(`NAJ Wedding API running on http://localhost:${PORT}`)
+  initReminderScheduler()
 })

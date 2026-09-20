@@ -121,6 +121,23 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ paymentStatus }),
     }),
+
+  updateCompanyEmail: (id, { email, reminderEmail }) =>
+    request(`/admin/companies/${id}/email`, {
+      method: 'PUT',
+      body: JSON.stringify({ email, reminderEmail }),
+    }),
+
+  sendCompanyReminder: (id, customEmail) =>
+    request(`/admin/companies/${id}/remind`, {
+      method: 'POST',
+      body: JSON.stringify({ customEmail }),
+    }),
+
+  sendAllUnpaidReminders: () =>
+    request('/admin/companies/remind-unpaid', {
+      method: 'POST',
+    }),
 }
 
 export function setToken(token) {

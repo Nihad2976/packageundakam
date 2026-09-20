@@ -25,6 +25,9 @@ function countCompanyQuotations(company) {
   return 0
 }
 
+import { sendMonthlyReminderEmail } from '../services/emailService.js'
+import { getMonthEndDetails } from '../services/reminderScheduler.js'
+
 // GET /api/admin/companies - List all companies
 router.get('/companies', (req, res) => {
   try {
@@ -37,10 +40,12 @@ router.get('/companies', (req, res) => {
         name: u.name,
         username: u.username || u.email,
         email: u.email,
+        reminderEmail: u.reminderEmail || u.email,
         company: u.company,
         status: u.status || 'active',
         paymentStatus: u.paymentStatus || 'paid',
         lastUsed: u.lastUsed || null,
+        lastReminderSent: u.lastReminderSent || null,
         createdAt: u.createdAt,
         updatedAt: u.updatedAt,
         quotationCount: countCompanyQuotations(u.company),
@@ -127,6 +132,7 @@ router.put('/companies/:id/payment', (req, res) => {
         name: users[index].name,
         username: users[index].username || users[index].email,
         email: users[index].email,
+        reminderEmail: users[index].reminderEmail || users[index].email,
         company: users[index].company,
         status: users[index].status,
         paymentStatus: users[index].paymentStatus,
@@ -136,6 +142,145 @@ router.put('/companies/:id/payment', (req, res) => {
   } catch (err) {
     console.error('Error updating company payment status:', err)
     res.status(500).json({ error: 'Failed to update company payment status' })
+  }
+})
+
+// PUT /api/admin/companies/:id/email - Update recipient email for reminders
+router.put('/companies/:id/email', (req, res) => {
+  try {
+    const { email, reminderEmail } = req.body
+    if (!email && !reminderEmail) {
+      return res.status(400).json({ error: 'Valid email address is required' })
+    }
+
+    const users = readUsers()
+    const index = users.findIndex((u) => u.id === req.params.id)
+    if (index === -1) {
+      return res.status(404).json({ error: 'Company not found' })
+    }
+
+    const updatedEmail = email ? email.trim() : users[index].email
+    const updatedReminderEmail = reminderEmail !== undefined ? reminderEmail.trim() : users[index].reminderEmail
+
+    users[index] = {
+      ...users[index],
+      email: updatedEmail,
+      reminderEmail: updatedReminderEmail || updatedEmail,
+      updatedAt: new Date().toISOString(),
+    }
+
+    writeUsers(users)
+
+    res.json({
+      success: true,
+      company: {
+        id: users[index].id,
+        name: users[index].name,
+        email: users[index].email,
+        reminderEmail: users[index].reminderEmail,
+      },
+    })
+  } catch (err) {
+    console.error('Error updating company email:', err)
+    res.status(500).json({ error: 'Failed to update company email' })
+  }
+})
+
+// POST /api/admin/companies/:id/remind - Send manual reminder email to a company
+router.post('/companies/:id/remind', async (req, res) => {
+  try {
+    const users = readUsers()
+    const index = users.findIndex((u) => u.id === req.params.id)
+    if (index === -1) {
+      return res.status(404).json({ error: 'Company not found' })
+    }
+
+    const user = users[index]
+    const { customEmail } = req.body
+    const targetEmail = (customEmail && customEmail.trim()) || user.reminderEmail || user.email
+
+    if (!targetEmail) {
+      return res.status(400).json({ error: 'No recipient email address available' })
+    }
+
+    const details = getMonthEndDetails()
+    await sendMonthlyReminderEmail({
+      to: targetEmail,
+      companyName: user.name,
+      username: user.username || user.email,
+      monthName: details.monthName,
+      dueDate: details.dueDate,
+      paymentStatus: user.paymentStatus || 'unpaid',
+    })
+
+    const now = new Date().toISOString()
+    users[index] = {
+      ...users[index],
+      lastReminderSent: now,
+      lastMonthReminderSent: details.monthKey,
+      reminderEmail: targetEmail, // save as reminderEmail if specified
+      updatedAt: now,
+    }
+
+    writeUsers(users)
+
+    res.json({
+      success: true,
+      sentTo: targetEmail,
+      lastReminderSent: now,
+      month: details.monthName,
+    })
+  } catch (err) {
+    console.error('Error sending company reminder:', err)
+    res.status(500).json({ error: err.message || 'Failed to send reminder email' })
+  }
+})
+
+// POST /api/admin/companies/remind-unpaid - Send reminders to all unpaid companies
+router.post('/companies/remind-unpaid', async (req, res) => {
+  try {
+    const users = readUsers()
+    const details = getMonthEndDetails()
+    let sentCount = 0
+    const now = new Date().toISOString()
+
+    for (let i = 0; i < users.length; i++) {
+      const u = users[i]
+      if (u.role === 'admin' || u.status === 'blocked' || u.paymentStatus === 'paid') continue
+
+      const targetEmail = u.reminderEmail || u.email
+      if (!targetEmail) continue
+
+      try {
+        await sendMonthlyReminderEmail({
+          to: targetEmail,
+          companyName: u.name,
+          username: u.username || u.email,
+          monthName: details.monthName,
+          dueDate: details.dueDate,
+          paymentStatus: 'unpaid',
+        })
+
+        users[i].lastReminderSent = now
+        users[i].lastMonthReminderSent = details.monthKey
+        sentCount++
+      } catch (e) {
+        console.error(`Failed to send unpaid reminder to ${targetEmail}:`, e)
+      }
+    }
+
+    if (sentCount > 0) {
+      writeUsers(users)
+    }
+
+    res.json({
+      success: true,
+      count: sentCount,
+      month: details.monthName,
+    })
+  } catch (err) {
+    console.error('Error sending unpaid reminders:', err)
+    res.status(500).json({ error: 'Failed to send unpaid reminders' })
   }
 })
 

@@ -60,11 +60,14 @@
     "company": "litheads",
     "password": "$2b$10$I/ool2SICjvd69MMwQ6vnOeUDvT46xaS1kspD8IOE6/EVtVG.8sDq",
     "createdAt": "2026-09-20T17:00:00.000Z",
-    "updatedAt": "2026-09-20T13:59:18.209Z",
+    "updatedAt": "2026-09-20T14:47:45.480Z",
     "role": "company",
     "status": "active",
     "paymentStatus": "paid",
-    "lastUsed": "2026-09-20T13:59:18.220Z"
+    "lastUsed": "2026-09-20T13:59:18.220Z",
+    "reminderEmail": "lithe.adsevents@gmail.com",
+    "lastReminderSent": "2026-09-20T14:47:45.460Z",
+    "lastMonthReminderSent": "2026-09"
   },
   {
     "id": "admin-default-user-id",
