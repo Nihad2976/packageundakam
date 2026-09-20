@@ -30,8 +30,12 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin', { replace: true })
+      return
+    }
     loadData()
-  }, [])
+  }, [user, navigate])
 
   const handleDeleteQuotation = async (e, id, name) => {
     e.stopPropagation()

@@ -5,7 +5,6 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
   const { logout, user } = useAuth()
   const location = useLocation()
   const isHome = location.pathname === '/'
-  const isPiktoria = company === 'piktoria'
 
   const handleNavClick = (tab) => {
     if (setActiveTab) {
@@ -31,7 +30,12 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
         <div className="sidebar-top">
           {/* Brand Logo Header & Mobile Close Button */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-            <Link to="/" className="sidebar-logo" style={{ marginBottom: 0 }} onClick={() => onClose && onClose()}>
+            <Link
+              to={user?.role === 'admin' ? '/admin' : '/'}
+              className="sidebar-logo"
+              style={{ marginBottom: 0 }}
+              onClick={() => onClose && onClose()}
+            >
               <svg
                 width="28"
                 height="28"
@@ -67,7 +71,22 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
             )}
           </div>
 
-        {!isHome ? (
+        {user?.role === 'admin' ? (
+          /* Admin View: Only Admin Panel navigation */
+          <nav className="sidebar-nav" style={{ marginTop: '20px' }}>
+            <Link
+              to="/admin"
+              className="sidebar-nav-item active"
+              onClick={() => onClose && onClose()}
+              style={{ color: '#fbbf24', fontWeight: 600 }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Admin Panel</span>
+            </Link>
+          </nav>
+        ) : !isHome ? (
           /* Minimal Form View: Only Home Menu button */
           <nav className="sidebar-nav" style={{ marginTop: '20px' }}>
             <Link to="/" className="sidebar-nav-item active">
@@ -131,20 +150,6 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
                 </svg>
                 <span>Invoices</span>
               </button>
-
-              {user?.role === 'admin' && (
-                <Link
-                  to="/admin"
-                  className={`sidebar-nav-item ${location.pathname === '/admin' ? 'active' : ''}`}
-                  onClick={() => onClose && onClose()}
-                  style={{ color: '#fbbf24', fontWeight: 600 }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                  <span>Admin Panel</span>
-                </Link>
-              )}
 
               <button type="button" className="sidebar-nav-item">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

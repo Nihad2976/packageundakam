@@ -81,6 +81,9 @@ router.use(authMiddleware)
 router.use(checkBlockedMiddleware)
 
 router.get('/', (req, res) => {
+  if (req.user?.role === 'admin' || req.user?.company === 'admin') {
+    return res.json([])
+  }
   const comp = req.user.company || 'naj'
   const quotations = readQuotations(comp)
     .filter((q) => q.completed)

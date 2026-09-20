@@ -42,17 +42,17 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/login"
-        element={authenticated ? <Navigate to="/" replace /> : <Login />}
+        element={authenticated ? <Navigate to={user?.role === 'admin' ? '/admin' : '/'} replace /> : <Login />}
       />
       <Route
         path="/signup"
-        element={authenticated ? <Navigate to="/" replace /> : <Signup />}
+        element={authenticated ? <Navigate to={user?.role === 'admin' ? '/admin' : '/'} replace /> : <Signup />}
       />
       <Route
         path="/"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            {user?.role === 'admin' ? <Navigate to="/admin" replace /> : <Dashboard />}
           </ProtectedRoute>
         }
       />
@@ -68,7 +68,7 @@ function AppRoutes() {
         path="/quotation/new"
         element={
           <ProtectedRoute>
-            <QuotationFormRoute />
+            {user?.role === 'admin' ? <Navigate to="/admin" replace /> : <QuotationFormRoute />}
           </ProtectedRoute>
         }
       />
@@ -76,7 +76,7 @@ function AppRoutes() {
         path="/quotation/:id"
         element={
           <ProtectedRoute>
-            <QuotationFormRoute />
+            {user?.role === 'admin' ? <Navigate to="/admin" replace /> : <QuotationFormRoute />}
           </ProtectedRoute>
         }
       />
@@ -84,7 +84,7 @@ function AppRoutes() {
         path="/quotation/:id/download"
         element={
           <ProtectedRoute>
-            <FinalDownloadScreen />
+            {user?.role === 'admin' ? <Navigate to="/admin" replace /> : <FinalDownloadScreen />}
           </ProtectedRoute>
         }
       />
@@ -94,7 +94,7 @@ function AppRoutes() {
         path="/invoice/new"
         element={
           <ProtectedRoute>
-            <InvoiceFormRoute />
+            {user?.role === 'admin' ? <Navigate to="/admin" replace /> : <InvoiceFormRoute />}
           </ProtectedRoute>
         }
       />
@@ -102,7 +102,7 @@ function AppRoutes() {
         path="/invoice/:id"
         element={
           <ProtectedRoute>
-            <InvoiceFormRoute />
+            {user?.role === 'admin' ? <Navigate to="/admin" replace /> : <InvoiceFormRoute />}
           </ProtectedRoute>
         }
       />
@@ -110,12 +110,12 @@ function AppRoutes() {
         path="/invoice/:id/download"
         element={
           <ProtectedRoute>
-            <InvoiceDownload />
+            {user?.role === 'admin' ? <Navigate to="/admin" replace /> : <InvoiceDownload />}
           </ProtectedRoute>
         }
       />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to={user?.role === 'admin' ? '/admin' : '/'} replace />} />
     </Routes>
   )
 }

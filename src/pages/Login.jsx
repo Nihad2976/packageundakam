@@ -22,8 +22,12 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await login({ email: email.trim(), password })
-      navigate('/')
+      const res = await login({ email: email.trim(), password })
+      if (res?.user?.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.')
     } finally {

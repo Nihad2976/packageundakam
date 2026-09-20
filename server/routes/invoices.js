@@ -56,6 +56,9 @@ router.use(authMiddleware)
 router.use(checkBlockedMiddleware)
 
 router.get('/', (req, res) => {
+  if (req.user?.role === 'admin' || req.user?.company === 'admin') {
+    return res.json([])
+  }
   const comp = req.user.company || 'naj'
   const invoices = readInvoices(comp)
     .filter((i) => i.completed)

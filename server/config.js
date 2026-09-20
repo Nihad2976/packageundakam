@@ -22,6 +22,7 @@ for (const dir of [dataDir, uploadsDir, najDataDir, piktoriaDataDir, litheAdsDat
 export function getCompanyKey(company) {
   if (!company) return 'naj'
   const c = String(company).toLowerCase().trim()
+  if (c === 'admin') return 'admin'
   if (c.includes('lithe')) return 'litheads'
   if (c.includes('piktoria')) return 'piktoria'
   return 'naj'

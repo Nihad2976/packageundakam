@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { api } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 
@@ -152,9 +151,6 @@ export default function AdminDashboard() {
             </svg>
             {user?.name || 'Administrator'}
           </span>
-          <Link to="/" className="btn btn-secondary btn-sm">
-            Home Dashboard
-          </Link>
           <button type="button" className="btn btn-secondary btn-sm" onClick={logout}>
             Log Out
           </button>
