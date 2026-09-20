@@ -51,6 +51,21 @@ export default function AdminDashboard() {
     sending: false,
   })
 
+  // Email settings state
+  const [emailConfig, setEmailConfig] = useState({
+    configured: false,
+    user: '',
+    senderName: '',
+  })
+  const [emailSettingsModal, setEmailSettingsModal] = useState({
+    isOpen: false,
+    user: '',
+    pass: '',
+    senderName: 'PackageUndakam Admin',
+    saving: false,
+    error: '',
+  })
+
   // Action Loading State
   const [processingId, setProcessingId] = useState(null)
 
@@ -62,6 +77,15 @@ export default function AdminDashboard() {
     setTimeout(() => {
       setToast({ message: '', type: 'success' })
     }, 4500)
+  }
+
+  const loadEmailSettings = async () => {
+    try {
+      const data = await api.getEmailSettings()
+      setEmailConfig(data)
+    } catch (err) {
+      console.error('Failed to load email settings:', err)
+    }
   }
 
   const loadCompanies = async () => {
@@ -80,6 +104,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadCompanies()
+    loadEmailSettings()
   }, [])
 
   const handleOpenConfirm = (company, targetStatus) => {
@@ -200,6 +225,33 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleSaveEmailSettings = async (e) => {
+    e?.preventDefault()
+    if (!emailSettingsModal.user.trim()) {
+      setEmailSettingsModal((prev) => ({ ...prev, error: 'Please enter your Gmail address.' }))
+      return
+    }
+
+    setEmailSettingsModal((prev) => ({ ...prev, saving: true, error: '' }))
+    try {
+      await api.saveEmailSettings({
+        user: emailSettingsModal.user.trim(),
+        pass: emailSettingsModal.pass.trim(),
+        senderName: emailSettingsModal.senderName.trim() || 'PackageUndakam Admin',
+        service: 'gmail',
+      })
+      showToast('Gmail connection verified and saved!')
+      setEmailSettingsModal({ isOpen: false, user: '', pass: '', senderName: '', saving: false, error: '' })
+      await loadEmailSettings()
+    } catch (err) {
+      setEmailSettingsModal((prev) => ({
+        ...prev,
+        saving: false,
+        error: err.message || 'Connection test failed. Please verify your Gmail address and 16-digit App Password.',
+      }))
+    }
+  }
+
   // Filter logic
   const filteredCompanies = companies.filter((comp) => {
     const q = searchQuery.toLowerCase().trim()
@@ -242,6 +294,35 @@ export default function AdminDashboard() {
         </div>
 
         <div className="admin-header-actions">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => {
+              setEmailSettingsModal({
+                isOpen: true,
+                user: emailConfig.rawUser || '',
+                pass: '',
+                senderName: emailConfig.senderName || 'PackageUndakam Admin',
+                saving: false,
+                error: '',
+              })
+            }}
+            title="Configure Gmail and 16-digit App Password for sending real emails"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '7px' }}
+          >
+            <span
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: emailConfig.configured ? '#34d399' : '#f59e0b',
+                display: 'inline-block',
+                boxShadow: emailConfig.configured ? '0 0 8px rgba(52, 211, 153, 0.6)' : '0 0 8px rgba(245, 158, 11, 0.6)',
+              }}
+            />
+            <span>{emailConfig.configured ? 'Gmail Connected' : 'Connect Gmail'}</span>
+          </button>
+
           <span className="admin-user-pill">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="7" r="4"></circle>
@@ -613,6 +694,45 @@ export default function AdminDashboard() {
               <h3>Send Subscription Reminder</h3>
             </div>
             <div className="admin-confirm-body">
+              {/* Warning if email is not yet configured */}
+              {!emailConfig.configured && (
+                <div
+                  style={{
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.35)',
+                    borderRadius: '8px',
+                    padding: '12px 14px',
+                    marginBottom: '14px',
+                    fontSize: '13px',
+                    color: '#fde68a',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <strong>⚠️ Gmail is not connected yet!</strong>
+                  <div style={{ marginTop: '4px', color: '#cbd5e1' }}>
+                    Real emails cannot be delivered until you enter your Gmail &amp; 16-digit Google App Password.
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      setReminderModal({ isOpen: false, company: null, recipientEmail: '', sending: false })
+                      setEmailSettingsModal({
+                        isOpen: true,
+                        user: emailConfig.rawUser || '',
+                        pass: '',
+                        senderName: emailConfig.senderName || 'PackageUndakam Admin',
+                        saving: false,
+                        error: '',
+                      })
+                    }}
+                    style={{ marginTop: '8px', fontSize: '12px', padding: '4px 10px' }}
+                  >
+                    ⚙️ Connect Gmail Now
+                  </button>
+                </div>
+              )}
+
               <p>
                 Send monthly subscription reminder email to <strong>{reminderModal.company.name}</strong>.
               </p>
@@ -657,6 +777,138 @@ export default function AdminDashboard() {
                 {reminderModal.sending ? 'Sending...' : 'Send Email Now'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email / Gmail Settings Configuration Modal */}
+      {emailSettingsModal.isOpen && (
+        <div
+          className="modal-backdrop"
+          onClick={() => !emailSettingsModal.saving && setEmailSettingsModal({ isOpen: false, user: '', pass: '', senderName: '', saving: false, error: '' })}
+        >
+          <div
+            className="modal-content admin-confirm-modal"
+            style={{ maxWidth: '520px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="admin-confirm-header">
+              <h3>Configure Gmail For Reminders</h3>
+            </div>
+
+            <form onSubmit={handleSaveEmailSettings}>
+              <div className="admin-confirm-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div
+                  style={{
+                    background: 'rgba(59, 130, 246, 0.08)',
+                    border: '1px solid rgba(59, 130, 246, 0.25)',
+                    borderRadius: '8px',
+                    padding: '14px',
+                    fontSize: '13px',
+                    color: '#cbd5e1',
+                    lineHeight: 1.5,
+                    marginBottom: '18px',
+                  }}
+                >
+                  <strong style={{ color: '#60a5fa', display: 'block', marginBottom: '6px' }}>
+                    How to get your 16-character Google App Password:
+                  </strong>
+                  <ol style={{ margin: 0, paddingLeft: '18px' }}>
+                    <li>Open your Google Account: <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline' }}>myaccount.google.com/apppasswords</a></li>
+                    <li>Ensure <strong>2-Step Verification</strong> is enabled on your Gmail.</li>
+                    <li>Enter <strong>PackageUndakam</strong> as the App name and click <strong>Create</strong>.</li>
+                    <li>Copy the <strong>16-letter password</strong> Google shows you and paste it below.</li>
+                  </ol>
+                </div>
+
+                {emailSettingsModal.error && (
+                  <div
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      border: '1px solid rgba(239, 68, 68, 0.4)',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      color: '#fca5a5',
+                      fontSize: '13px',
+                      marginBottom: '14px',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {emailSettingsModal.error}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '14px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                    Your Gmail Address:
+                  </label>
+                  <input
+                    type="email"
+                    className="admin-search-input"
+                    value={emailSettingsModal.user}
+                    onChange={(e) => setEmailSettingsModal((prev) => ({ ...prev, user: e.target.value }))}
+                    placeholder="e.g. yourname@gmail.com"
+                    required
+                    disabled={emailSettingsModal.saving}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '14px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                    16-Character Google App Password:
+                  </label>
+                  <input
+                    type="password"
+                    className="admin-search-input"
+                    value={emailSettingsModal.pass}
+                    onChange={(e) => setEmailSettingsModal((prev) => ({ ...prev, pass: e.target.value }))}
+                    placeholder="e.g. abcd efgh ijkl mnop"
+                    required={!emailConfig.configured}
+                    disabled={emailSettingsModal.saving}
+                    style={{ width: '100%', boxSizing: 'border-box', letterSpacing: '1px' }}
+                  />
+                  {emailConfig.configured && (
+                    <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginTop: '4px' }}>
+                      (Leave blank to keep existing saved password)
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                    Sender Display Name:
+                  </label>
+                  <input
+                    type="text"
+                    className="admin-search-input"
+                    value={emailSettingsModal.senderName}
+                    onChange={(e) => setEmailSettingsModal((prev) => ({ ...prev, senderName: e.target.value }))}
+                    placeholder="e.g. PackageUndakam Admin"
+                    disabled={emailSettingsModal.saving}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div className="admin-confirm-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={emailSettingsModal.saving}
+                  onClick={() => setEmailSettingsModal({ isOpen: false, user: '', pass: '', senderName: '', saving: false, error: '' })}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={emailSettingsModal.saving || !emailSettingsModal.user.trim()}
+                >
+                  {emailSettingsModal.saving ? 'Verifying with Google...' : 'Verify & Save Settings'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

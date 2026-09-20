@@ -1,41 +1,98 @@
 import nodemailer from 'nodemailer'
+import fs from 'fs'
+import { emailSettingsFile } from '../config.js'
 
-let transporter = null
-
-export function getTransporter() {
-  if (transporter) return transporter
-
-  const host = process.env.SMTP_HOST
-  const port = Number(process.env.SMTP_PORT) || 587
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
-
-  if (host && user && pass) {
-    transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-    })
-    console.log(`[EmailService] Configured SMTP with host: ${host}`)
-  } else {
-    // Development / fallback logger transporter
-    transporter = {
-      sendMail: async (mailOptions) => {
-        console.log('\n================== [OUTGOING EMAIL REMINDER] ==================')
-        console.log(`To: ${mailOptions.to}`)
-        console.log(`Subject: ${mailOptions.subject}`)
-        console.log(`From: ${mailOptions.from || 'PackageUndakam <admin@packageundakam.com>'}`)
-        console.log('----------------------------------------------------------------')
-        console.log(mailOptions.text || '(HTML Email content dispatched)')
-        console.log('===============================================================\n')
-        return { messageId: `mock-${Date.now()}` }
-      },
+export function getStoredEmailSettings() {
+  try {
+    if (fs.existsSync(emailSettingsFile)) {
+      const data = JSON.parse(fs.readFileSync(emailSettingsFile, 'utf-8'))
+      if (data && typeof data === 'object') return data
     }
-    console.log('[EmailService] SMTP not fully configured. Using simulated logger transport.')
+  } catch (err) {
+    console.error('Error reading email_settings.json:', err)
+  }
+  return null
+}
+
+export function saveStoredEmailSettings(settings) {
+  try {
+    fs.writeFileSync(emailSettingsFile, JSON.stringify(settings, null, 2))
+    return true
+  } catch (err) {
+    console.error('Error saving email_settings.json:', err)
+    throw err
+  }
+}
+
+export function getResolvedEmailConfig() {
+  const stored = getStoredEmailSettings()
+
+  const user = (stored && stored.user) || process.env.EMAIL_USER || process.env.GMAIL_USER || process.env.SMTP_USER || ''
+  const pass = (stored && stored.pass) || process.env.EMAIL_PASS || process.env.GMAIL_APP_PASS || process.env.SMTP_PASS || ''
+  const senderName = (stored && stored.senderName) || process.env.EMAIL_SENDER_NAME || 'PackageUndakam'
+  const service = (stored && stored.service) || (user.toLowerCase().includes('@gmail.com') ? 'gmail' : '')
+  const host = (stored && stored.host) || process.env.SMTP_HOST || ''
+  const port = Number((stored && stored.port) || process.env.SMTP_PORT) || 587
+
+  const isConfigured = Boolean(user && pass)
+
+  return {
+    isConfigured,
+    user: user.trim(),
+    pass: pass.trim().replace(/\s+/g, ''), // strip spaces from Google app passwords
+    senderName: senderName.trim(),
+    service: service.trim().toLowerCase(),
+    host: host.trim(),
+    port,
+  }
+}
+
+export function createMailTransporter(customConfig = null) {
+  const config = customConfig || getResolvedEmailConfig()
+
+  if (!config.user || !config.pass) {
+    return null
   }
 
-  return transporter
+  if (config.service === 'gmail' || config.user.toLowerCase().includes('@gmail.com')) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: config.user,
+        pass: config.pass,
+      },
+    })
+  }
+
+  // Custom SMTP
+  if (config.host) {
+    return nodemailer.createTransport({
+      host: config.host,
+      port: config.port,
+      secure: config.port === 465,
+      auth: {
+        user: config.user,
+        pass: config.pass,
+      },
+    })
+  }
+
+  // Fallback to gmail service if not specified
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: config.user,
+      pass: config.pass,
+    },
+  })
+}
+
+export async function testTransporterConnection(customConfig) {
+  const transporter = createMailTransporter(customConfig)
+  if (!transporter) {
+    throw new Error('Please provide both email address and password.')
+  }
+  return await transporter.verify()
 }
 
 export async function sendMonthlyReminderEmail({
@@ -46,10 +103,21 @@ export async function sendMonthlyReminderEmail({
   dueDate,
   paymentStatus = 'unpaid',
 }) {
-  const client = getTransporter()
-  const fromEmail = process.env.SMTP_FROM || 'PackageUndakam Admin <admin@packageundakam.com>'
-  const subject = `Monthly Subscription Reminder - ${companyName} (${monthName})`
+  const config = getResolvedEmailConfig()
 
+  if (!config.isConfigured) {
+    throw new Error(
+      'Email service is not configured! Please click "Email Settings" in the Admin Panel and enter your Gmail address and 16-digit Google App Password.'
+    )
+  }
+
+  const transporter = createMailTransporter(config)
+  if (!transporter) {
+    throw new Error('Failed to initialize mail transporter with current credentials.')
+  }
+
+  const fromEmail = `"${config.senderName || 'PackageUndakam'}" <${config.user}>`
+  const subject = `Monthly Subscription Reminder - ${companyName} (${monthName})`
   const isPaid = paymentStatus.toLowerCase() === 'paid'
 
   const html = `
@@ -142,7 +210,8 @@ Thank you,
 PackageUndakam Admin Team
   `.trim()
 
-  const info = await client.sendMail({
+  console.log(`[EmailService] Dispatching real email from ${fromEmail} to ${to}...`)
+  const info = await transporter.sendMail({
     from: fromEmail,
     to,
     subject,
@@ -150,5 +219,6 @@ PackageUndakam Admin Team
     html,
   })
 
+  console.log(`[EmailService] Email successfully sent to ${to}! Message ID: ${info.messageId}`)
   return { success: true, messageId: info.messageId, to }
 }

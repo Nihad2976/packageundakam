@@ -9,6 +9,7 @@ export const uploadsDir = path.join(__dirname, 'uploads', 'pdfs')
 export const quotationsFile = path.join(dataDir, 'quotations.json')
 export const invoicesFile = path.join(dataDir, 'invoices.json')
 export const usersFile = path.join(dataDir, 'users.json')
+export const emailSettingsFile = path.join(dataDir, 'email_settings.json')
 
 // Company-specific folders
 export const najDataDir = path.join(dataDir, 'naj')

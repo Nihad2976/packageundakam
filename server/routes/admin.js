@@ -25,7 +25,12 @@ function countCompanyQuotations(company) {
   return 0
 }
 
-import { sendMonthlyReminderEmail } from '../services/emailService.js'
+import {
+  sendMonthlyReminderEmail,
+  getResolvedEmailConfig,
+  saveStoredEmailSettings,
+  testTransporterConnection,
+} from '../services/emailService.js'
 import { getMonthEndDetails } from '../services/reminderScheduler.js'
 
 // GET /api/admin/companies - List all companies
@@ -232,7 +237,7 @@ router.post('/companies/:id/remind', async (req, res) => {
     })
   } catch (err) {
     console.error('Error sending company reminder:', err)
-    res.status(500).json({ error: err.message || 'Failed to send reminder email' })
+    res.status(400).json({ error: err.message || 'Failed to send reminder email' })
   }
 })
 
@@ -281,6 +286,89 @@ router.post('/companies/remind-unpaid', async (req, res) => {
   } catch (err) {
     console.error('Error sending unpaid reminders:', err)
     res.status(500).json({ error: 'Failed to send unpaid reminders' })
+  }
+})
+
+// GET /api/admin/email-settings - Check email configuration status
+router.get('/email-settings', (req, res) => {
+  try {
+    const config = getResolvedEmailConfig()
+    // Mask email for privacy: e.g. "ni***@gmail.com"
+    let maskedUser = ''
+    if (config.user) {
+      const parts = config.user.split('@')
+      if (parts.length === 2) {
+        const name = parts[0]
+        const maskedName = name.length > 2 ? `${name.slice(0, 2)}***` : `${name}***`
+        maskedUser = `${maskedName}@${parts[1]}`
+      } else {
+        maskedUser = config.user
+      }
+    }
+
+    res.json({
+      configured: config.isConfigured,
+      user: maskedUser,
+      rawUser: config.user,
+      senderName: config.senderName,
+      service: config.service || 'gmail',
+      host: config.host,
+      port: config.port,
+    })
+  } catch (err) {
+    console.error('Error fetching email settings:', err)
+    res.status(500).json({ error: 'Failed to fetch email settings' })
+  }
+})
+
+// POST /api/admin/email-settings - Save and test email configuration
+router.post('/email-settings', async (req, res) => {
+  try {
+    const { user, pass, senderName, service, host, port } = req.body
+
+    if (!user || !user.trim()) {
+      return res.status(400).json({ error: 'Email address is required' })
+    }
+
+    // If password is not provided, see if we have existing password
+    const existing = getResolvedEmailConfig()
+    const passwordToUse = (pass && pass.trim()) || (existing && existing.pass)
+
+    if (!passwordToUse) {
+      return res.status(400).json({ error: '16-digit Google App Password is required' })
+    }
+
+    const testConfig = {
+      user: user.trim(),
+      pass: passwordToUse.trim().replace(/\s+/g, ''),
+      senderName: (senderName && senderName.trim()) || 'PackageUndakam',
+      service: (service && service.trim().toLowerCase()) || (user.toLowerCase().includes('@gmail.com') ? 'gmail' : ''),
+      host: (host && host.trim()) || '',
+      port: Number(port) || 587,
+    }
+
+    // Test the SMTP / Gmail connection before saving!
+    try {
+      await testTransporterConnection(testConfig)
+    } catch (testErr) {
+      console.error('Email connection test failed:', testErr)
+      return res.status(400).json({
+        error: `Email connection test failed: ${testErr.message || 'Please check your email and 16-digit App Password.'}`,
+      })
+    }
+
+    // Save to settings file
+    saveStoredEmailSettings(testConfig)
+
+    res.json({
+      success: true,
+      message: 'Email configuration verified and saved successfully!',
+      user: testConfig.user,
+      senderName: testConfig.senderName,
+    })
+  } catch (err) {
+    console.error('Error saving email settings:', err)
+    res.status(500).json({ error: err.message || 'Failed to save email settings' })
   }
 })
 

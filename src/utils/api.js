@@ -138,6 +138,14 @@ export const api = {
     request('/admin/companies/remind-unpaid', {
       method: 'POST',
     }),
+
+  getEmailSettings: () => request('/admin/email-settings'),
+
+  saveEmailSettings: (settings) =>
+    request('/admin/email-settings', {
+      method: 'POST',
+      body: JSON.stringify(settings),
+    }),
 }
 
 export function setToken(token) {
