@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import QuotationPage1 from './QuotationPage1'
 import QuotationPage2 from './QuotationPage2'
 import { renderPdfPageAsImage } from '../utils/pdf'
 import { useAuth } from '../context/AuthContext'
@@ -6,15 +7,18 @@ import { useAuth } from '../context/AuthContext'
 export default function PdfPreview({ quotation, page2Ref }) {
   const { company: authCompany } = useAuth() || {}
   const company = quotation?.company || authCompany || 'naj'
+  const isLitheAds = company === 'litheads'
   const [page1Url, setPage1Url] = useState(null)
   const [page3Url, setPage3Url] = useState(null)
 
   useEffect(() => {
     let url1, url3
-    renderPdfPageAsImage(0, company).then((url) => {
-      url1 = url
-      setPage1Url(url)
-    })
+    if (!isLitheAds) {
+      renderPdfPageAsImage(0, company).then((url) => {
+        url1 = url
+        setPage1Url(url)
+      })
+    }
     renderPdfPageAsImage(2, company).then((url) => {
       url3 = url
       setPage3Url(url)
@@ -24,13 +28,17 @@ export default function PdfPreview({ quotation, page2Ref }) {
       if (url1) URL.revokeObjectURL(url1)
       if (url3) URL.revokeObjectURL(url3)
     }
-  }, [company])
+  }, [company, isLitheAds])
 
   return (
     <div className="pdf-preview">
       <div className="pdf-preview-page">
         <span className="pdf-page-label">Page 1</span>
-        {page1Url ? (
+        {isLitheAds ? (
+          <div className="pdf-page-2-wrapper">
+            <QuotationPage1 quotation={quotation} id="preview-page-1" />
+          </div>
+        ) : page1Url ? (
           <iframe title="Page 1" src={`${page1Url}#toolbar=0`} className="pdf-iframe" />
         ) : (
           <div className="pdf-loading">Loading page 1...</div>

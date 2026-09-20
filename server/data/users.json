@@ -35,5 +35,15 @@
     "password": "$2b$10$G9gqb0LvD8vgQUFd.cEcBOAVEpB1/svmWuZYrZDwQyUxdij19SJTS",
     "createdAt": "2026-09-09T10:55:12.170Z",
     "updatedAt": "2026-09-09T10:55:12.171Z"
+  },
+  {
+    "id": "lithe-ads-default-user-id",
+    "name": "Lithe Ads",
+    "email": "lithe.adsevents@gmail.com",
+    "username": "litheads",
+    "company": "litheads",
+    "password": "$2b$10$I/ool2SICjvd69MMwQ6vnOeUDvT46xaS1kspD8IOE6/EVtVG.8sDq",
+    "createdAt": "2026-09-20T17:00:00.000Z",
+    "updatedAt": "2026-09-20T17:00:00.000Z"
   }
 ]

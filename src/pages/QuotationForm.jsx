@@ -14,14 +14,18 @@ import {
   getServicesForCompany,
   getPackagePresetsForCompany,
   TEAM_ROLES,
+  getTeamRolesForCompany,
   FORM_STEPS,
   LEAF_OPTIONS,
+  MONTHS,
 } from '../constants/quotation'
 import {
   createEmptyQuotation,
   buildPresetServices,
   createEmptyCoverage,
   buildGreeting,
+  getDayWithSuffix,
+  parseMonthAndDay,
 } from '../utils/quotation'
 import { api } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
@@ -46,7 +50,49 @@ function StepNav({ currentStep, onStepClick, maxStep }) {
   )
 }
 
-function ClientStep({ data, onChange }) {
+function ClientStep({ data, onChange, company }) {
+  const currentCompany = data.company || company || 'naj'
+  const isLitheAds = currentCompany === 'litheads'
+
+  if (isLitheAds) {
+    const clientName = data.clientName || ''
+    const displayGreeting =
+      data.greeting?.trim() ||
+      (clientName.trim()
+        ? (clientName.trim().toLowerCase().startsWith('hi ') ? clientName.trim() : `Hi ${clientName.trim()}`)
+        : '')
+
+    return (
+      <div className="form-step">
+        <h2>Client Details</h2>
+        <div className="form-field">
+          <label htmlFor="clientName">Client Name</label>
+          <input
+            id="clientName"
+            type="text"
+            value={clientName}
+            onChange={(e) => {
+              const val = e.target.value
+              onChange({
+                clientName: val,
+                greeting: val.trim()
+                  ? (val.trim().toLowerCase().startsWith('hi ') ? val.trim() : `Hi ${val.trim()}`)
+                  : '',
+              })
+            }}
+            placeholder="e.g. Rukzana Gafoor"
+          />
+          <p className="form-hint">Enter the client name for the first page cover greeting.</p>
+        </div>
+
+        <div className="greeting-preview">
+          <span>First page greeting:</span>
+          <strong>{displayGreeting || '—'}</strong>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="form-step">
       <h2>Client</h2>
@@ -99,18 +145,32 @@ function ClientStep({ data, onChange }) {
       <div className="greeting-preview">
         <span>Greeting preview:</span>
         <strong>
-          {buildGreeting(data.clientType, data.groomName, data.brideName)}
+          {data.greeting?.trim() || buildGreeting(data.clientType, data.groomName, data.brideName)}
         </strong>
+      </div>
+
+      <div className="form-field" style={{ marginTop: '16px' }}>
+        <label htmlFor="customGreeting">Custom Greeting Override (Optional)</label>
+        <input
+          id="customGreeting"
+          type="text"
+          value={data.greeting || ''}
+          onChange={(e) => onChange({ greeting: e.target.value })}
+          placeholder="e.g. Hi Ms. Ruksana or Hi Rukzana Gafoor"
+        />
+        <p className="form-hint">Leave blank to use the standard greeting preview above.</p>
       </div>
     </div>
   )
 }
 
-function PackageStep({ data, onChange }) {
+function PackageStep({ data, onChange, company }) {
+  const currentCompany = data.company || company || 'naj'
+
   const handlePackageChange = (pkg) => {
     onChange({
       package: pkg,
-      services: buildPresetServices(pkg),
+      services: buildPresetServices(pkg, currentCompany),
     })
   }
 
@@ -131,24 +191,28 @@ function PackageStep({ data, onChange }) {
           </label>
         ))}
       </div>
+
       <p className="form-hint">Package price is entered manually in the Price step.</p>
     </div>
   )
 }
 
-function CoverageStep({ data, onChange }) {
+function CoverageStep({ data, onChange, company }) {
+  const currentCompany = data.company || company || 'naj'
+  const isLitheAds = currentCompany === 'litheads'
+  const teamRoles = getTeamRolesForCompany(currentCompany)
   const [showAddMenu, setShowAddMenu] = useState(false)
 
   const addCoverage = (type) => {
-    const newCoverage = createEmptyCoverage(type)
+    const newCoverage = createEmptyCoverage(type, '', null, '', currentCompany)
     onChange({ coverages: [...data.coverages, newCoverage] })
     setShowAddMenu(false)
   }
 
   const addCustomCoverage = () => {
-    const name = prompt('Enter coverage name (e.g. Mehndi, Engagement, Haldi):')
+    const name = prompt('Enter event name (e.g. Mehndi, Wedding, Reception):')
     if (name?.trim()) {
-      const newCoverage = createEmptyCoverage(COVERAGE_TYPES.CUSTOM, name.trim())
+      const newCoverage = createEmptyCoverage(COVERAGE_TYPES.CUSTOM, name.trim(), null, '', currentCompany)
       onChange({ coverages: [...data.coverages, newCoverage] })
     }
     setShowAddMenu(false)
@@ -168,13 +232,17 @@ function CoverageStep({ data, onChange }) {
     onChange({
       coverages: data.coverages.map((c) => {
         if (c.id !== coverageId) return c
+        const roleExists = c.roles.some((r) => r.id === roleId)
+        const updatedRoles = roleExists
+          ? c.roles.map((r) => {
+              if (r.id !== roleId) return r
+              const selected = !r.selected
+              return { ...r, selected, quantity: selected ? Math.max(1, r.quantity || 1) : 0 }
+            })
+          : [...c.roles, { id: roleId, selected: true, quantity: 1 }]
         return {
           ...c,
-          roles: c.roles.map((r) => {
-            if (r.id !== roleId) return r
-            const selected = !r.selected
-            return { ...r, selected, quantity: selected ? 1 : 0 }
-          }),
+          roles: updatedRoles,
         }
       }),
     })
@@ -192,19 +260,51 @@ function CoverageStep({ data, onChange }) {
     })
   }
 
+  const handleLitheMonthChange = (coverageId, newMonth) => {
+    const cov = data.coverages.find((c) => c.id === coverageId)
+    let day = cov?.day
+    if (!day) {
+      const parsed = parseMonthAndDay(cov?.date)
+      day = parsed.day
+    }
+    const dayWithSuffix = getDayWithSuffix(day)
+    const monthShort = newMonth.slice(0, 3)
+    const date = `${monthShort} ${dayWithSuffix}`
+    updateCoverage(coverageId, { month: newMonth, day, date })
+  }
+
+  const handleLitheDayChange = (coverageId, newDay) => {
+    const cov = data.coverages.find((c) => c.id === coverageId)
+    let month = cov?.month
+    if (!month) {
+      const parsed = parseMonthAndDay(cov?.date)
+      month = parsed.month
+    }
+    const dayNum = Number(newDay)
+    const dayWithSuffix = getDayWithSuffix(dayNum)
+    const monthShort = month.slice(0, 3)
+    const date = `${monthShort} ${dayWithSuffix}`
+    updateCoverage(coverageId, { month, day: dayNum, date })
+  }
+
   return (
     <div className="form-step">
       <h2>Coverage</h2>
-      <p className="form-hint">Add event coverage sections, set their dates, and group them by Bride or Groom side.</p>
+      <p className="form-hint">
+        {isLitheAds
+          ? 'Select event month and date, specify event name, and photographer / videographer counts.'
+          : 'Add event coverage sections, set their dates, and group them by Bride or Groom side.'}
+      </p>
 
       {data.coverages.map((coverage, index) => (
         <div key={coverage.id} className="coverage-card">
           <div className="coverage-card-header">
             <h3>
               {index + 1}.{' '}
-              {coverage.type === COVERAGE_TYPES.CUSTOM
-                ? coverage.customName || 'Custom Event'
-                : COVERAGE_LABELS[coverage.type]}
+              {coverage.customName?.trim() ||
+                (coverage.type === COVERAGE_TYPES.CUSTOM
+                  ? 'Custom Event'
+                  : COVERAGE_LABELS[coverage.type])}
             </h3>
             <button
               type="button"
@@ -215,33 +315,111 @@ function CoverageStep({ data, onChange }) {
             </button>
           </div>
 
-          <div className="coverage-meta-grid">
-            <div className="form-field-sm">
-              <label>Event Date</label>
-              <input
-                type="text"
-                placeholder="e.g. July 23"
-                value={coverage.date || ''}
-                onChange={(e) => updateCoverage(coverage.id, { date: e.target.value })}
-              />
+          <div
+            className="coverage-meta-grid"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '16px',
+              alignItems: 'flex-start',
+              marginBottom: '16px',
+              width: '100%',
+            }}
+          >
+            {isLitheAds ? (
+              <>
+                <div className="form-field-sm" style={{ flex: '0 0 160px', minWidth: '130px' }}>
+                  <label htmlFor={`coverage-month-${coverage.id}`}>Month</label>
+                  <select
+                    id={`coverage-month-${coverage.id}`}
+                    value={
+                      coverage.month ||
+                      parseMonthAndDay(coverage.date).month ||
+                      'October'
+                    }
+                    onChange={(e) => handleLitheMonthChange(coverage.id, e.target.value)}
+                    className="select-input"
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    {MONTHS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-field-sm" style={{ flex: '0 0 110px', minWidth: '90px' }}>
+                  <label htmlFor={`coverage-day-${coverage.id}`}>Date</label>
+                  <select
+                    id={`coverage-day-${coverage.id}`}
+                    value={
+                      coverage.day ||
+                      parseMonthAndDay(coverage.date).day ||
+                      9
+                    }
+                    onChange={(e) => handleLitheDayChange(coverage.id, e.target.value)}
+                    className="select-input"
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            ) : (
+              <div className="form-field-sm">
+                <label>Event Date</label>
+                <input
+                  type="text"
+                  placeholder="e.g. July 23"
+                  value={coverage.date || ''}
+                  onChange={(e) => updateCoverage(coverage.id, { date: e.target.value })}
+                />
+              </div>
+            )}
+
+            <div
+              className="form-field-sm"
+              style={isLitheAds ? { flex: '1 1 240px', minWidth: '200px' } : undefined}
+            >
+              <label>{isLitheAds ? 'Event Name' : 'Side / Section'}</label>
+              {isLitheAds ? (
+                <input
+                  type="text"
+                  placeholder="e.g. Mehandi night or Wedding day"
+                  value={coverage.customName || ''}
+                  onChange={(e) => updateCoverage(coverage.id, { customName: e.target.value })}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              ) : (
+                <select
+                  value={coverage.side || COVERAGE_SIDES.BRIDE}
+                  onChange={(e) => updateCoverage(coverage.id, { side: e.target.value })}
+                  className="select-input"
+                >
+                  {Object.entries(COVERAGE_SIDE_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
-            <div className="form-field-sm">
-              <label>Side / Section</label>
-              <select
-                value={coverage.side || COVERAGE_SIDES.BRIDE}
-                onChange={(e) => updateCoverage(coverage.id, { side: e.target.value })}
-                className="select-input"
-              >
-                {Object.entries(COVERAGE_SIDE_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {coverage.type === COVERAGE_TYPES.CUSTOM && (
+            {!isLitheAds && coverage.type === COVERAGE_TYPES.CUSTOM && (
               <div className="form-field-sm full-width">
                 <label>Event Title</label>
                 <input
@@ -255,7 +433,7 @@ function CoverageStep({ data, onChange }) {
           </div>
 
           <div className="role-list">
-            {TEAM_ROLES.map((role) => {
+            {teamRoles.map((role) => {
               const roleData = coverage.roles.find((r) => r.id === role.id)
               return (
                 <div key={role.id} className="service-row">
@@ -290,6 +468,9 @@ function CoverageStep({ data, onChange }) {
         </button>
         {showAddMenu && (
           <div className="add-coverage-menu">
+            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.CUSTOM)}>
+              {isLitheAds ? 'New Event (Custom Name)' : 'Custom Event'}
+            </button>
             <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.BRIDE_EVE)}>
               Bride Eve
             </button>
@@ -311,9 +492,11 @@ function CoverageStep({ data, onChange }) {
             <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.HALDI)}>
               Haldi
             </button>
-            <button type="button" onClick={addCustomCoverage}>
-              Custom Event
-            </button>
+            {!isLitheAds && (
+              <button type="button" onClick={addCustomCoverage}>
+                Prompt Event Name
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -323,6 +506,7 @@ function CoverageStep({ data, onChange }) {
 
 function ServicesStep({ data, onChange, company }) {
   const currentCompany = data.company || company || 'naj'
+  const isLitheAds = currentCompany === 'litheads'
   const serviceList = getServicesForCompany(currentCompany)
 
   const handlePackageChange = (pkg) => {
@@ -360,23 +544,32 @@ function ServicesStep({ data, onChange, company }) {
     })
   }
 
-  const grouped = {
-    video: serviceList.filter((s) => s.category === 'video'),
-    photo: serviceList.filter((s) => s.category === 'photo'),
-    other: serviceList.filter((s) => s.category === 'other'),
-  }
+  const grouped = isLitheAds
+    ? {
+        deliverable: serviceList.filter((s) => s.category !== 'addon'),
+        addon: serviceList.filter((s) => s.category === 'addon'),
+      }
+    : {
+        video: serviceList.filter((s) => s.category === 'video'),
+        photo: serviceList.filter((s) => s.category === 'photo'),
+        other: serviceList.filter((s) => s.category === 'other'),
+      }
 
   const renderService = (serviceDef) => {
     const service = data.services.find((s) => s.id === serviceDef.id)
     if (!service) return null
 
-    const currentLeaves = service.leafCount || serviceDef.defaultLeaves || (currentCompany === 'piktoria' ? 40 : 30)
+    const currentLeaves = service.leafCount || serviceDef.defaultLeaves || (isLitheAds || currentCompany === 'piktoria' ? 40 : 30)
 
-    let displayName = serviceDef.name
-    if (serviceDef.hasLeafCount) {
-      displayName = currentCompany === 'piktoria'
-        ? `${currentLeaves}-Leaf Wedding Album`
-        : `${currentLeaves} Leaf Premium Album`
+    let displayName = service.customTitle || serviceDef.name
+    if (!service.customTitle && serviceDef.hasLeafCount) {
+      if (isLitheAds) {
+        displayName = `${currentLeaves * 2} Pages Wedding Album`
+      } else if (currentCompany === 'piktoria') {
+        displayName = `${currentLeaves}-Leaf Wedding Album`
+      } else {
+        displayName = `${currentLeaves} Leaf Premium Album`
+      }
     }
 
     return (
@@ -409,12 +602,12 @@ function ServicesStep({ data, onChange, company }) {
               >
                 {LEAF_OPTIONS.map((leaves) => (
                   <option key={leaves} value={leaves}>
-                    {leaves} Leafs
+                    {isLitheAds ? `${leaves * 2} Pages (${leaves} Leafs)` : `${leaves} Leafs`}
                   </option>
                 ))}
               </select>
             )}
-            {!serviceDef.hasPhotoQuantity && (
+            {!serviceDef.hasPhotoQuantity && !serviceDef.hasLeafCount && !isLitheAds && (
               <QuantityControl
                 value={service.quantity}
                 onChange={(qty) => setQuantity(serviceDef.id, qty)}
@@ -428,10 +621,10 @@ function ServicesStep({ data, onChange, company }) {
 
   return (
     <div className="form-step">
-      <h2>Services</h2>
+      <h2>Services &amp; Deliverables</h2>
 
       <div className="package-switch-notice">
-        <span>Package:</span>
+        <span>Package Preset:</span>
         {Object.entries(PACKAGE_LABELS).map(([value, label]) => (
           <button
             key={value}
@@ -442,51 +635,80 @@ function ServicesStep({ data, onChange, company }) {
             {label}
           </button>
         ))}
-        <p className="form-hint">Switching package resets all service selections to the preset.</p>
+        <p className="form-hint">Switching package resets service selections to preset defaults.</p>
       </div>
 
-      <div className="services-group">
-        <h3>Video</h3>
-        {grouped.video.map(renderService)}
-      </div>
+      {isLitheAds ? (
+        <>
+          <div className="services-group">
+            <h3>Deliverables</h3>
+            {grouped.deliverable.map(renderService)}
+          </div>
 
-      <div className="services-group">
-        <h3>Photography / Album</h3>
-        {grouped.photo.map(renderService)}
-      </div>
+          <div className="services-group">
+            <h3>Complimentary Add-ons</h3>
+            {grouped.addon.map(renderService)}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="services-group">
+            <h3>Video</h3>
+            {grouped.video.map(renderService)}
+          </div>
 
-      <div className="services-group">
-        <h3>Other</h3>
-        {grouped.other.map(renderService)}
-      </div>
+          <div className="services-group">
+            <h3>Photography / Album</h3>
+            {grouped.photo.map(renderService)}
+          </div>
+
+          <div className="services-group">
+            <h3>Other</h3>
+            {grouped.other.map(renderService)}
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
-function PriceStep({ data, onChange }) {
+function PriceStep({ data, onChange, company }) {
+  const currentCompany = data.company || company || 'naj'
+  const isLitheAds = currentCompany === 'litheads'
+
   return (
     <div className="form-step">
       <h2>Price</h2>
       <div className="form-field">
-        <label htmlFor="price">Package Cost</label>
+        <label htmlFor="price">Total Package Cost</label>
         <div className="price-input-wrapper">
-          <span className="currency">₹</span>
+          <span className="currency">{isLitheAds ? '' : '₹'}</span>
           <input
             id="price"
             type="text"
             value={data.price}
             onChange={(e) => onChange({ price: e.target.value })}
-            placeholder="e.g. 43000"
+            placeholder={isLitheAds ? 'e.g. 75,000' : 'e.g. 43000'}
           />
         </div>
       </div>
 
       <div className="payment-terms-fixed">
-        <h3>Payment Terms (Fixed)</h3>
+        <h3>Payment Policy {isLitheAds ? '(Lithe Ads)' : '(Fixed)'}</h3>
         <ul>
-          <li>Advance: 4% (Booking confirmation)</li>
-          <li>On Wedding Day: 66%</li>
-          <li>After Final Delivery: 30%</li>
+          {isLitheAds ? (
+            <>
+              <li>10% on Booking</li>
+              <li>70% on wedding day</li>
+              <li>20% after receiving output</li>
+            </>
+          ) : (
+            <>
+              <li>Advance: 4% (Booking confirmation)</li>
+              <li>On Wedding Day: 66%</li>
+              <li>After Final Delivery: 30%</li>
+            </>
+          )}
         </ul>
       </div>
     </div>
@@ -523,6 +745,9 @@ export default function QuotationForm() {
       .then((q) => {
         setData({
           clientType: q.clientType,
+          clientName: q.clientName || '',
+          greeting: q.greeting || '',
+          packageTitle: q.packageTitle || '',
           groomName: q.groomName || '',
           brideName: q.brideName || '',
           package: q.package,
@@ -573,6 +798,11 @@ export default function QuotationForm() {
 
   const validateStep = (step) => {
     if (step === 0) {
+      const currentCompany = data.company || company || 'naj'
+      if (currentCompany === 'litheads') {
+        const name = data.clientName !== undefined ? data.clientName : (data.brideName || data.groomName)
+        return !!(name?.trim() || data.greeting?.trim())
+      }
       if (data.clientType === CLIENT_TYPES.GROOM && !data.groomName?.trim()) return false
       if (data.clientType === CLIENT_TYPES.BRIDE && !data.brideName?.trim()) return false
       if (data.clientType === CLIENT_TYPES.BOTH) {
@@ -618,11 +848,11 @@ export default function QuotationForm() {
   }
 
   const steps = [
-    <ClientStep key="client" data={data} onChange={updateData} />,
-    <PackageStep key="package" data={data} onChange={updateData} />,
-    <CoverageStep key="coverage" data={data} onChange={updateData} />,
+    <ClientStep key="client" data={data} onChange={updateData} company={company} />,
+    <PackageStep key="package" data={data} onChange={updateData} company={company} />,
+    <CoverageStep key="coverage" data={data} onChange={updateData} company={company} />,
     <ServicesStep key="services" data={data} onChange={updateData} company={company} />,
-    <PriceStep key="price" data={data} onChange={updateData} />,
+    <PriceStep key="price" data={data} onChange={updateData} company={company} />,
     <PreviewStep
       key="preview"
       quotation={{ ...data, company: data.company || company }}

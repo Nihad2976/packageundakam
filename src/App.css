@@ -2613,3 +2613,187 @@ body {
   text-transform: uppercase;
   margin-top: 3px;
 }
+
+/* ==========================================================================
+   LITHE ADS QUOTATION PAGES
+   ========================================================================== */
+.pdf-template-page1.litheads-theme {
+  width: 595px;
+  height: 842px;
+  min-height: 842px;
+  max-height: 842px;
+  background: #ffffff;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  color: #000000;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: block;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.pdf-template-page1.litheads-theme * {
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  box-sizing: border-box;
+}
+
+.litheads-page1-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.litheads-page1-greeting {
+  position: absolute;
+  top: 271px;
+  left: 115px;
+  z-index: 2;
+  font-size: 11.8px;
+  font-weight: 600;
+  color: #000000;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.pdf-template-page2.litheads-theme {
+  width: 595px;
+  height: 842px;
+  min-height: 842px;
+  max-height: 842px;
+  background: #ffffff;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  color: #000000;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: block;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.pdf-template-page2.litheads-theme * {
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  box-sizing: border-box;
+}
+
+.litheads-sidebar-stripe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 115px;
+  height: 100%;
+  background: #32452f;
+  z-index: 1;
+}
+
+.litheads-page2-content {
+  position: relative;
+  z-index: 2;
+  margin-left: 115px;
+  padding: 82px 48px 40px 48px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.litheads-package-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 44px 0;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.litheads-events-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 38px;
+}
+
+.litheads-event-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.litheads-event-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 5px;
+  line-height: 1.3;
+}
+
+.litheads-event-role {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.55;
+}
+
+.litheads-section-heading {
+  font-size: 12px;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+}
+
+.litheads-deliverables-section {
+  margin-bottom: 38px;
+}
+
+.litheads-deliverables-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+}
+
+.litheads-deliverables-list li {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.55;
+}
+
+.litheads-addons-section {
+  margin-bottom: 40px;
+}
+
+.litheads-addons-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+}
+
+.litheads-addons-list li {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.55;
+}
+
+.litheads-total-row {
+  font-size: 12px;
+  font-weight: 600;
+  color: #000000;
+  margin-top: auto;
+  margin-bottom: 58px;
+  line-height: 1.3;
+}

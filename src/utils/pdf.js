@@ -1,7 +1,10 @@
-import { PDFDocument } from 'pdf-lib'
+import { PDFDocument, rgb } from 'pdf-lib'
 import html2canvas from 'html2canvas'
+import fontkit from '@pdf-lib/fontkit'
 import sourcePdfUrl from '../assets/shahana sabir.pdf?url'
 import piktoriaPdfUrl from '../assets/PIKTORIA.pdf?url'
+import litheAdsPdfUrl from '../assets/LitheAds.pdf?url'
+import quicksandFontUrl from '../assets/Quicksand-SemiBold.ttf?url'
 
 const A4_WIDTH = 595.28
 const A4_HEIGHT = 841.89
@@ -56,13 +59,19 @@ export async function generateInvoicePdf(invoiceElement, company = 'naj') {
   return await finalDoc.save()
 }
 
-export async function generateQuotationPdf(page2Element, company = 'naj') {
-  // Ensure all custom web fonts (Red Hat Display, Dream Avenue, Public Sans) are fully loaded
+export async function generateQuotationPdf(page2Element, company = 'naj', quotation = null) {
+  // Ensure all custom web fonts (Red Hat Display, Dream Avenue, Public Sans, Quicksand) are fully loaded
   if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
     await document.fonts.ready
   }
 
-  const templateUrl = company === 'piktoria' ? piktoriaPdfUrl : sourcePdfUrl
+  const isLitheAds = company === 'litheads'
+  const templateUrl =
+    isLitheAds
+      ? litheAdsPdfUrl
+      : company === 'piktoria'
+        ? piktoriaPdfUrl
+        : sourcePdfUrl
   const sourceBytes = await fetch(templateUrl).then((r) => r.arrayBuffer())
   const sourceDoc = await PDFDocument.load(sourceBytes)
   const pages = sourceDoc.getPages()
@@ -72,7 +81,7 @@ export async function generateQuotationPdf(page2Element, company = 'naj') {
   }
 
   const canvas = await html2canvas(page2Element, {
-    scale: 4,
+    scale: 3,
     useCORS: true,
     allowTaint: true,
     logging: false,
@@ -88,9 +97,61 @@ export async function generateQuotationPdf(page2Element, company = 'naj') {
   const finalDoc = await PDFDocument.create()
   const page2Image = await finalDoc.embedPng(pngBytes)
 
+  // Page 1: Always copy directly from sourceDoc to maintain 100% original vector crispness
   const [page1] = await finalDoc.copyPages(sourceDoc, [0])
   finalDoc.addPage(page1)
 
+  if (isLitheAds) {
+    let greeting = quotation?.greeting?.trim()
+    if (!greeting) {
+      const rawName =
+        quotation?.clientName?.trim() ||
+        quotation?.brideName?.trim() ||
+        quotation?.groomName?.trim()
+      if (rawName) {
+        greeting = rawName.toLowerCase().startsWith('hi ') ? rawName : `Hi ${rawName}`
+      } else {
+        greeting = ''
+      }
+    }
+
+    // Cover original 'Hi Rukzana Gafoor' text with a clean white rectangle
+    // LitheAds Page 1 is 613.2 x 859.92.
+    // Original bbox: x: 119.11, y_top: 276.82, y_bottom: 294.10
+    // PDF coordinate (bottom-left origin): y = 859.92 - 294.10 = 565.82
+    page1.drawRectangle({
+      x: 115,
+      y: 563,
+      width: 250,
+      height: 25,
+      color: rgb(1, 1, 1),
+    })
+
+    if (greeting) {
+      try {
+        finalDoc.registerFontkit(fontkit)
+        const fontBytes = await fetch(quicksandFontUrl).then((r) => r.arrayBuffer())
+        const quicksandFont = await finalDoc.embedFont(fontBytes)
+        page1.drawText(greeting, {
+          x: 119.11,
+          y: 569.11,
+          size: 11.998,
+          font: quicksandFont,
+          color: rgb(0, 0, 0),
+        })
+      } catch (err) {
+        console.warn('Custom font embedding failed, using fallback:', err)
+        page1.drawText(greeting, {
+          x: 119.11,
+          y: 569.11,
+          size: 11.998,
+          color: rgb(0, 0, 0),
+        })
+      }
+    }
+  }
+
+  // Page 2: Custom customized page (HTML rendered to high-res image)
   const page2 = finalDoc.addPage([A4_WIDTH, A4_HEIGHT])
   page2.drawImage(page2Image, {
     x: 0,
@@ -99,6 +160,7 @@ export async function generateQuotationPdf(page2Element, company = 'naj') {
     height: A4_HEIGHT,
   })
 
+  // Page 3: Directly copied from sourceDoc
   const [page3] = await finalDoc.copyPages(sourceDoc, [2])
   finalDoc.addPage(page3)
 
@@ -181,7 +243,12 @@ export function openPdfInNewTab(pdfBytes) {
 }
 
 export async function renderPdfPageAsImage(pageIndex, company = 'naj') {
-  const templateUrl = company === 'piktoria' ? piktoriaPdfUrl : sourcePdfUrl
+  const templateUrl =
+    company === 'litheads'
+      ? litheAdsPdfUrl
+      : company === 'piktoria'
+        ? piktoriaPdfUrl
+        : sourcePdfUrl
   const sourceBytes = await fetch(templateUrl).then((r) => r.arrayBuffer())
   const sourceDoc = await PDFDocument.load(sourceBytes)
   const tempDoc = await PDFDocument.create()

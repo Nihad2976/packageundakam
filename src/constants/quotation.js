@@ -133,14 +133,63 @@ export const PIKTORIA_PACKAGE_PRESETS = {
   ],
 }
 
+export const LITHE_ADS_TEAM_ROLES = [
+  { id: 'photographer', label: 'Photographer' },
+  { id: 'videographer', label: 'Videographer' },
+]
+
+export const LITHE_ADS_SERVICES = [
+  { id: 'wedding_album_80p', name: '80 Pages Wedding Album', category: 'deliverable', hasLeafCount: true, defaultLeaves: 40 },
+  { id: 'colour_graded_images', name: 'Whole Images Will Be Colour Graded', category: 'deliverable' },
+  { id: 'online_gallery', name: 'Online Photo Gallery', category: 'deliverable' },
+  { id: 'usb_hard_drive', name: 'Usb Hard Drive', category: 'deliverable' },
+  { id: 'wedding_highlights_lithe', name: 'Wedding Highlight Video (Approx 5–10 Min)', category: 'deliverable' },
+  { id: 'social_reels', name: 'Social Media Reels (30 Sec Each)', category: 'deliverable' },
+  { id: 'pre_wed_reel', name: 'Pre Wed Reel', category: 'deliverable' },
+  { id: 'pre_wed_photos', name: 'Pre Wed Colour Graded Photos', category: 'deliverable' },
+  { id: 'pre_wed_shoot', name: 'Pre Wed Photoshoot And Videography', category: 'addon' },
+  { id: 'mini_album', name: 'Mini Album', category: 'addon' },
+  { id: 'calendar', name: 'Calender', category: 'addon' },
+  { id: 'photo_frames', name: 'Photo Frames', category: 'addon' },
+]
+
+export const LITHE_ADS_PACKAGE_PRESETS = {
+  [PACKAGES.WITH_ALBUM]: [
+    'wedding_album_80p',
+    'colour_graded_images',
+    'online_gallery',
+    'usb_hard_drive',
+    'wedding_highlights_lithe',
+    'social_reels',
+    'mini_album',
+    'calendar',
+    'photo_frames',
+  ],
+  [PACKAGES.WITHOUT_ALBUM]: [
+    'colour_graded_images',
+    'online_gallery',
+    'usb_hard_drive',
+    'wedding_highlights_lithe',
+    'social_reels',
+    'photo_frames',
+  ],
+}
+
 export function getServicesForCompany(company) {
+  if (company === 'litheads') return LITHE_ADS_SERVICES
   if (company === 'piktoria') return PIKTORIA_SERVICES
   return SERVICES
 }
 
 export function getPackagePresetsForCompany(company) {
+  if (company === 'litheads') return LITHE_ADS_PACKAGE_PRESETS
   if (company === 'piktoria') return PIKTORIA_PACKAGE_PRESETS
   return PACKAGE_PRESETS
+}
+
+export function getTeamRolesForCompany(company) {
+  if (company === 'litheads') return LITHE_ADS_TEAM_ROLES
+  return TEAM_ROLES
 }
 
 
@@ -160,3 +209,18 @@ export const FORM_STEPS = [
 ]
 
 export const DEFAULT_PHOTO_QUANTITY = '200+'
+
+export const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]

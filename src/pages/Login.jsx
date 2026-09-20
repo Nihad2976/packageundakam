@@ -55,7 +55,7 @@ export default function Login() {
               className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. najwedding or email@example.com"
+              placeholder="e.g. litheads, najwedding, or email@example.com"
               autoFocus
               required
             />

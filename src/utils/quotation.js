@@ -4,6 +4,7 @@ import {
   PACKAGE_PRESETS,
   SERVICES,
   PIKTORIA_SERVICES,
+  LITHE_ADS_SERVICES,
   getServicesForCompany,
   getPackagePresetsForCompany,
   DEFAULT_PHOTO_QUANTITY,
@@ -35,6 +36,9 @@ export function buildGreeting(clientType, groomName, brideName) {
 }
 
 export function getDisplayName(quotation) {
+  if (quotation?.clientName?.trim()) {
+    return quotation.clientName.trim()
+  }
   const { clientType, groomName, brideName } = quotation
   const groom = groomName?.trim()
   const bride = brideName?.trim()
@@ -46,6 +50,9 @@ export function getDisplayName(quotation) {
 }
 
 export function getPdfFileName(quotation) {
+  if (quotation?.clientName?.trim()) {
+    return `${quotation.clientName.trim().replace(/\s+/g, '_')}_Package.pdf`
+  }
   const { clientType, groomName, brideName } = quotation
   const groom = groomName?.trim()
   const bride = brideName?.trim()
@@ -68,15 +75,136 @@ export function formatPrice(price) {
   return `₹${num.toLocaleString('en-IN')}`
 }
 
+export function formatLitheTotal(price) {
+  if (!price && price !== 0) return '75,000'
+  const num = Number(String(price).replace(/[^\d]/g, ''))
+  if (!num) return String(price)
+  return num.toLocaleString('en-IN')
+}
+
+export function getDayWithSuffix(day) {
+  const num = parseInt(day, 10)
+  if (isNaN(num)) return day ? String(day) : ''
+  const j = num % 10
+  const k = num % 100
+  if (j === 1 && k !== 11) {
+    return `${num}st`
+  }
+  if (j === 2 && k !== 12) {
+    return `${num}nd`
+  }
+  if (j === 3 && k !== 13) {
+    return `${num}rd`
+  }
+  return `${num}th`
+}
+
+export function parseMonthAndDay(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return { month: 'October', day: 9 }
+  const clean = dateStr.trim()
+  const m = clean.match(/^([a-zA-Z]+)\s+([0-9]{1,2})(?:st|nd|rd|th)?$/i)
+  if (m) {
+    const monthNames = {
+      jan: 'January',
+      feb: 'February',
+      mar: 'March',
+      apr: 'April',
+      may: 'May',
+      jun: 'June',
+      jul: 'July',
+      aug: 'August',
+      sep: 'September',
+      oct: 'October',
+      nov: 'November',
+      dec: 'December',
+    }
+    const prefix = m[1].toLowerCase().slice(0, 3)
+    const fullMonth = monthNames[prefix] || m[1]
+    const dayNum = parseInt(m[2], 10)
+    return { month: fullMonth, day: dayNum }
+  }
+  return { month: 'October', day: 9 }
+}
+
+export function getCoverageDateLabel(coverage) {
+  if (!coverage) return ''
+  let month = coverage.month
+  let day = coverage.day
+  if (!month || !day) {
+    const parsed = parseMonthAndDay(coverage.date)
+    month = month || parsed.month
+    day = day || parsed.day
+  }
+  const monthShort = month ? month.slice(0, 3) : ''
+  const dayWithSuffix = getDayWithSuffix(day)
+  return `${monthShort} ${dayWithSuffix}`.trim()
+}
+
+export function formatLithePackageHeading(coverages) {
+  if (!coverages || !Array.isArray(coverages) || coverages.length === 0) {
+    return 'Wedding package'
+  }
+
+  const parsed = coverages
+    .map((cov) => {
+      let month = cov.month
+      let day = cov.day
+      if (!month || !day) {
+        const p = parseMonthAndDay(cov.date)
+        month = month || p.month
+        day = day || p.day
+      }
+      const dayNum = parseInt(day, 10)
+      const dayWithSuffix = !isNaN(dayNum) ? getDayWithSuffix(dayNum) : (day ? String(day) : '')
+      return {
+        month: month || 'October',
+        dayNum: !isNaN(dayNum) ? dayNum : null,
+        dayWithSuffix,
+      }
+    })
+    .filter((p) => p.dayWithSuffix)
+
+  if (parsed.length === 0) return 'Wedding package'
+
+  const firstMonth = parsed[0].month
+  const allSameMonth = parsed.every((p) => p.month.toLowerCase() === firstMonth.toLowerCase())
+
+  if (allSameMonth) {
+    if (parsed.length === 1) {
+      return `Wedding package for ${firstMonth} ${parsed[0].dayWithSuffix}`
+    }
+    if (parsed.length === 2) {
+      return `Wedding package for ${firstMonth} ${parsed[0].dayWithSuffix} & ${parsed[1].dayWithSuffix}`
+    }
+    const days = parsed.map((p) => p.dayWithSuffix)
+    const allExceptLast = days.slice(0, -1).join(', ')
+    const last = days[days.length - 1]
+    return `Wedding package for ${firstMonth} ${allExceptLast} & ${last}`
+  }
+
+  const formattedItems = parsed.map((p) => `${p.month} ${p.dayWithSuffix}`)
+  if (formattedItems.length === 1) {
+    return `Wedding package for ${formattedItems[0]}`
+  }
+  if (formattedItems.length === 2) {
+    return `Wedding package for ${formattedItems[0]} & ${formattedItems[1]}`
+  }
+  const allExceptLast = formattedItems.slice(0, -1).join(', ')
+  const last = formattedItems[formattedItems.length - 1]
+  return `Wedding package for ${allExceptLast} & ${last}`
+}
+
+export const formatLithePackageTitle = formatLithePackageHeading
+
 export function createServiceSelection(serviceId, quantity = 1, company = 'naj') {
-  const allServices = [...SERVICES, ...PIKTORIA_SERVICES]
+  const allServices = [...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES]
   const service = allServices.find((s) => s.id === serviceId)
   return {
     id: serviceId,
     selected: true,
     quantity,
     photoQuantity: service?.hasPhotoQuantity ? (company === 'piktoria' ? '100+' : DEFAULT_PHOTO_QUANTITY) : undefined,
-    leafCount: service?.hasLeafCount ? (company === 'piktoria' ? 40 : 30) : undefined,
+    leafCount: service?.hasLeafCount ? (company === 'piktoria' || company === 'litheads' ? 40 : 30) : undefined,
   }
 }
 
@@ -113,8 +241,24 @@ export function generateUUID() {
   return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
 }
 
-export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName = '', side = null, date = '') {
+export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName = '', side = null, date = '', company = 'naj') {
   const actualSide = side || getDefaultSide(type)
+  if (company === 'litheads') {
+    const { month, day } = parseMonthAndDay(date)
+    return {
+      id: generateUUID(),
+      type,
+      customName,
+      month,
+      day,
+      date: date || `${month.slice(0, 3)} ${getDayWithSuffix(day)}`,
+      side: actualSide,
+      roles: [
+        { id: 'photographer', selected: true, quantity: 1 },
+        { id: 'videographer', selected: true, quantity: 1 },
+      ],
+    }
+  }
   return {
     id: generateUUID(),
     type,
@@ -131,11 +275,56 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
 }
 
 export function createEmptyQuotation(company = 'naj') {
+  if (company === 'litheads') {
+    return {
+      clientName: '',
+      greeting: '',
+      clientType: CLIENT_TYPES.BOTH,
+      groomName: '',
+      brideName: '',
+      package: PACKAGES.WITH_ALBUM,
+      packageTitle: 'Wedding package for October 8th & 9th',
+      price: '75,000',
+      services: buildPresetServices(PACKAGES.WITH_ALBUM, 'litheads'),
+      coverages: [
+        {
+          id: generateUUID(),
+          type: COVERAGE_TYPES.CUSTOM,
+          customName: 'Mehandi night',
+          month: 'October',
+          day: 8,
+          date: 'Oct 8th',
+          side: COVERAGE_SIDES.BOTH,
+          roles: [
+            { id: 'photographer', selected: true, quantity: 1 },
+            { id: 'videographer', selected: true, quantity: 1 },
+          ],
+        },
+        {
+          id: generateUUID(),
+          type: COVERAGE_TYPES.CUSTOM,
+          customName: 'Wedding day',
+          month: 'October',
+          day: 9,
+          date: 'Oct 9th',
+          side: COVERAGE_SIDES.BOTH,
+          roles: [
+            { id: 'photographer', selected: true, quantity: 1 },
+            { id: 'videographer', selected: true, quantity: 1 },
+          ],
+        },
+      ],
+      completed: false,
+      company: 'litheads',
+    }
+  }
+
   return {
     clientType: CLIENT_TYPES.BOTH,
     groomName: '',
     brideName: '',
     package: PACKAGES.WITH_ALBUM,
+    packageTitle: '',
     price: '',
     services: buildPresetServices(PACKAGES.WITH_ALBUM, company),
     coverages: [],
@@ -145,11 +334,15 @@ export function createEmptyQuotation(company = 'naj') {
 }
 
 export function getServiceDisplayName(serviceId, photoQuantity, leafCount) {
-  const allServices = [...SERVICES, ...PIKTORIA_SERVICES]
+  const allServices = [...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES]
   const service = allServices.find((s) => s.id === serviceId)
   if (!service) return ''
   if (service.hasPhotoQuantity && photoQuantity) {
     return `${photoQuantity} ${service.name}`
+  }
+  if (serviceId === 'wedding_album_80p') {
+    const leaves = leafCount || 40
+    return `${leaves * 2} Pages Wedding Album`
   }
   if (service.hasLeafCount || serviceId === 'piktoria_album' || serviceId === 'premium_album') {
     const leaves = leafCount || service.defaultLeaves || (serviceId === 'piktoria_album' ? 40 : 30)
@@ -169,7 +362,7 @@ export function getSelectedServices(services) {
     .filter((s) => s.selected && s.quantity > 0)
     .map((s) => ({
       ...s,
-      displayName: getServiceDisplayName(s.id, s.photoQuantity, s.leafCount),
+      displayName: s.customTitle || getServiceDisplayName(s.id, s.photoQuantity, s.leafCount),
     }))
 }
 

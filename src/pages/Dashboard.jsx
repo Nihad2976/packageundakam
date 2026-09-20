@@ -111,15 +111,21 @@ export default function Dashboard() {
     return parts[0].slice(0, 2).toUpperCase()
   }
 
-  // Determine if active user is Piktoria
+  // Determine active company
   const isPiktoria =
     company === 'piktoria' ||
     user?.company === 'piktoria' ||
     (user?.name || '').toLowerCase().includes('piktoria') ||
     (user?.email || '').toLowerCase().includes('piktoria')
 
-  const currentUserName = user?.name || (isPiktoria ? 'Piktoria Weddings' : 'NAJ Wedding')
-  const userInitials = isPiktoria ? 'PW' : getInitials(currentUserName)
+  const isLitheAds =
+    company === 'litheads' ||
+    user?.company === 'litheads' ||
+    (user?.name || '').toLowerCase().includes('lithe') ||
+    (user?.email || '').toLowerCase().includes('lithe')
+
+  const currentUserName = user?.name || (isLitheAds ? 'Lithe Ads' : isPiktoria ? 'Piktoria Weddings' : 'NAJ Wedding')
+  const userInitials = isLitheAds ? 'LA' : isPiktoria ? 'PW' : getInitials(currentUserName)
 
   return (
     <div className="app-layout">

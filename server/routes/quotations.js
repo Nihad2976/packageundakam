@@ -19,7 +19,7 @@ function writeQuotations(company = 'naj', data = []) {
 }
 
 function findQuotationAcrossCompanies(id) {
-  for (const comp of ['naj', 'piktoria']) {
+  for (const comp of ['naj', 'piktoria', 'litheads']) {
     const list = readQuotations(comp)
     const found = list.find((q) => q.id === id)
     if (found) return { quotation: found, company: comp }
@@ -28,6 +28,7 @@ function findQuotationAcrossCompanies(id) {
 }
 
 function getDisplayName(q) {
+  if (q.clientName?.trim()) return q.clientName.trim()
   if (q.clientType === 'groom') return q.groomName?.trim() || 'Unnamed'
   if (q.clientType === 'bride') return q.brideName?.trim() || 'Unnamed'
   const groom = q.groomName?.trim() || ''

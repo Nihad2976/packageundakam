@@ -1,12 +1,15 @@
 import {
   buildGreeting,
   formatPrice,
+  formatLitheTotal,
+  formatLithePackageTitle,
+  getCoverageDateLabel,
   getSelectedServices,
   getCoverageLabel,
   getActiveRoles,
   groupCoveragesBySide,
 } from '../utils/quotation'
-import { PAYMENT_TERMS, TEAM_ROLES, SERVICES, PIKTORIA_SERVICES } from '../constants/quotation'
+import { PAYMENT_TERMS, TEAM_ROLES, SERVICES, PIKTORIA_SERVICES, LITHE_ADS_SERVICES } from '../constants/quotation'
 import { useAuth } from '../context/AuthContext'
 import piktoriaPage2Bg from '../assets/piktoria_page2_clean_bg.png'
 
@@ -14,6 +17,7 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
   const { company: authCompany } = useAuth() || {}
   const company = forcedCompany || quotation?.company || authCompany || 'naj'
   const isPiktoria = company === 'piktoria'
+  const isLitheAds = company === 'litheads'
 
   const greeting = buildGreeting(
     quotation.clientType,
@@ -65,6 +69,97 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
   const hasBride = groupedCoverages.bride.length > 0
   const hasGroom = groupedCoverages.groom.length > 0
   const hasBoth = groupedCoverages.both.length > 0
+
+  if (isLitheAds) {
+    const packageTitle = formatLithePackageTitle(coverages)
+
+    const deliverables = selectedServices.filter((s) => {
+      const def = LITHE_ADS_SERVICES.find((d) => d.id === s.id)
+      return def ? def.category !== 'addon' : true
+    })
+
+    const addons = selectedServices.filter((s) => {
+      const def = LITHE_ADS_SERVICES.find((d) => d.id === s.id)
+      return def?.category === 'addon'
+    })
+
+    const totalDisplay = formatLitheTotal(quotation.price)
+
+    return (
+      <div
+        id={id}
+        className="pdf-template-page2 litheads-theme"
+        style={{ transform: scale !== 1 ? `scale(${scale})` : undefined, transformOrigin: 'top left' }}
+      >
+        {/* Authentic dark green left stripe */}
+        <div className="litheads-sidebar-stripe" />
+
+        {/* Dynamic Page 2 Content */}
+        <div className="litheads-page2-content">
+          {/* 1. Wedding Package Title (Customizable & dynamic) */}
+          <div className="litheads-package-title">{packageTitle}</div>
+
+          {/* 2. Events breakdown with date, name, and photographer/videographer count */}
+          {coverages.length > 0 && (
+            <div className="litheads-events-section">
+              {coverages.map((coverage) => {
+                const eventName = getCoverageLabel(coverage)
+                const eventDate = getCoverageDateLabel(coverage)
+                const eventTitle = eventDate ? `${eventDate} ${eventName}` : eventName
+                const activeRoles = getActiveRoles(coverage)
+
+                return (
+                  <div key={coverage.id} className="litheads-event-item">
+                    <div className="litheads-event-title">{eventTitle}</div>
+                    {activeRoles.map((role) => {
+                      const roleLabel =
+                        role.id === 'photographer' || role.id.includes('photo')
+                          ? 'Photographer'
+                          : role.id === 'videographer' || role.id.includes('video') || role.id.includes('cine')
+                            ? 'Videographer'
+                            : getRoleLabel(role.id)
+                      return (
+                        <div key={role.id} className="litheads-event-role">
+                          {role.quantity} {roleLabel}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* 3. Deliverables */}
+          {deliverables.length > 0 && (
+            <div className="litheads-deliverables-section">
+              <div className="litheads-section-heading">Deliverables</div>
+              <ul className="litheads-deliverables-list">
+                {deliverables.map((service) => (
+                  <li key={service.id}>{service.displayName}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 4. Complimentary Add-ons */}
+          {addons.length > 0 && (
+            <div className="litheads-addons-section">
+              <div className="litheads-section-heading">Complementary add-ons with the package</div>
+              <ul className="litheads-addons-list">
+                {addons.map((addon) => (
+                  <li key={addon.id}>{addon.displayName}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 5. Total */}
+          <div className="litheads-total-row">Total : {totalDisplay}</div>
+        </div>
+      </div>
+    )
+  }
 
   if (isPiktoria) {
     const activeCoverages = coverages.filter((c) => getActiveRoles(c).length > 0)

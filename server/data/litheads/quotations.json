@@ -1,0 +1,250 @@
+[
+  {
+    "id": "bcf322c3-19ea-4199-a1a6-e1b4c61b050a",
+    "userId": "lithe-ads-default-user-id",
+    "company": "litheads",
+    "clientName": "Rukzana Gafoor",
+    "greeting": "Hi Rukzana Gafoor",
+    "clientType": "both",
+    "groomName": "",
+    "brideName": "",
+    "package": "without_album",
+    "packageTitle": "Wedding package for October 8th & 9th",
+    "price": "75,000",
+    "services": [
+      {
+        "id": "wedding_album_80p",
+        "selected": false,
+        "quantity": 0,
+        "leafCount": 30
+      },
+      {
+        "id": "colour_graded_images",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "online_gallery",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "usb_hard_drive",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "wedding_highlights_lithe",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "social_reels",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "pre_wed_reel",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "pre_wed_photos",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "pre_wed_shoot",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "mini_album",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "calendar",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "photo_frames",
+        "selected": true,
+        "quantity": 1
+      }
+    ],
+    "coverages": [
+      {
+        "id": "47808ba0-3a06-4610-91fb-0ba7c7493eee",
+        "type": "wedding_day",
+        "customName": "",
+        "month": "November",
+        "day": 12,
+        "date": "Nov 12th",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "videographer",
+            "selected": true,
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "id": "1d87a522-0bab-435d-a980-b4bf9bba6c28",
+        "type": "groom_eve",
+        "customName": "",
+        "month": "November",
+        "day": 11,
+        "date": "Nov 11th",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "videographer",
+            "selected": true,
+            "quantity": 1
+          }
+        ]
+      }
+    ],
+    "completed": true,
+    "createdAt": "2026-09-20T12:33:31.167Z",
+    "updatedAt": "2026-09-20T12:50:22.086Z",
+    "pdfPath": "bcf322c3-19ea-4199-a1a6-e1b4c61b050a_Rukzana_Gafoor_Package.pdf"
+  },
+  {
+    "id": "9b294726-0a09-4c00-add8-b4586dc3a3b0",
+    "userId": "lithe-ads-default-user-id",
+    "company": "litheads",
+    "clientName": "Thasleem",
+    "greeting": "Hi Thasleem",
+    "clientType": "both",
+    "groomName": "",
+    "brideName": "",
+    "package": "with_album",
+    "packageTitle": "Wedding package for October 8th & 9th",
+    "price": "75,000",
+    "services": [
+      {
+        "id": "wedding_album_80p",
+        "selected": true,
+        "quantity": 1,
+        "leafCount": 40
+      },
+      {
+        "id": "colour_graded_images",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "online_gallery",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "usb_hard_drive",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "wedding_highlights_lithe",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "social_reels",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "pre_wed_reel",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "pre_wed_photos",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "pre_wed_shoot",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "mini_album",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "calendar",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "photo_frames",
+        "selected": true,
+        "quantity": 1
+      }
+    ],
+    "coverages": [
+      {
+        "id": "f521b0b5-1668-4ebc-b4bc-f01aecf10643",
+        "type": "custom",
+        "customName": "Mehandi night",
+        "month": "April",
+        "day": 13,
+        "date": "Apr 13th",
+        "side": "both",
+        "roles": [
+          {
+            "id": "photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "videographer",
+            "selected": true,
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "id": "e9baf599-7721-4078-aee9-1f696201bc06",
+        "type": "custom",
+        "customName": "Wedding day",
+        "month": "April",
+        "day": 10,
+        "date": "Apr 10th",
+        "side": "both",
+        "roles": [
+          {
+            "id": "photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "videographer",
+            "selected": true,
+            "quantity": 1
+          }
+        ]
+      }
+    ],
+    "completed": true,
+    "createdAt": "2026-09-20T13:01:32.297Z",
+    "updatedAt": "2026-09-20T13:31:59.296Z",
+    "pdfPath": "9b294726-0a09-4c00-add8-b4586dc3a3b0_Thasleem_Package.pdf"
+  }
+]

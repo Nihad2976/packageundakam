@@ -48,16 +48,44 @@ function readUsers() {
     users.push(piktoriaUser)
   }
 
+  const hasLitheAds = users.some(
+    (u) =>
+      u.email === 'lithe.adsevents@gmail.com' ||
+      u.username === 'litheads' ||
+      u.name?.toLowerCase() === 'lithe ads' ||
+      u.company === 'litheads'
+  )
+  if (!hasLitheAds) {
+    const litheAdsUser = {
+      id: 'lithe-ads-default-user-id',
+      name: 'Lithe Ads',
+      email: 'lithe.adsevents@gmail.com',
+      username: 'litheads',
+      company: 'litheads',
+      password: '$2b$10$I/ool2SICjvd69MMwQ6vnOeUDvT46xaS1kspD8IOE6/EVtVG.8sDq',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    users.push(litheAdsUser)
+  }
+
   // Ensure all users have company field set
   let updated = false
   for (const u of users) {
     if (!u.company) {
-      u.company = (u.name || '').toLowerCase().includes('piktoria') ? 'piktoria' : 'naj'
+      const lower = (u.name || '').toLowerCase()
+      if (lower.includes('piktoria')) {
+        u.company = 'piktoria'
+      } else if (lower.includes('lithe')) {
+        u.company = 'litheads'
+      } else {
+        u.company = 'naj'
+      }
       updated = true
     }
   }
 
-  if (!hasNaj || !hasPiktoria || updated) {
+  if (!hasNaj || !hasPiktoria || !hasLitheAds || updated) {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2))
   }
 
@@ -110,7 +138,8 @@ router.post('/signup', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10)
     const now = new Date().toISOString()
-    const company = cleanName.toLowerCase().includes('piktoria') ? 'piktoria' : 'naj'
+    const lowerName = cleanName.toLowerCase()
+    const company = lowerName.includes('piktoria') ? 'piktoria' : lowerName.includes('lithe') ? 'litheads' : 'naj'
     const newUser = {
       id: uuidv4(),
       name: cleanName,
@@ -166,7 +195,8 @@ router.post('/login', async (req, res) => {
         uUsername === cleanInput ||
         uName === cleanInput ||
         (cleanInput === 'najwedding' && (uName.includes('naj') || uEmail.includes('naj'))) ||
-        (cleanInput === 'piktoria' && (uName.includes('piktoria') || uEmail.includes('piktoria') || uUsername === 'piktoria'))
+        (cleanInput === 'piktoria' && (uName.includes('piktoria') || uEmail.includes('piktoria') || uUsername === 'piktoria')) ||
+        (cleanInput === 'litheads' && (uName.includes('lithe') || uEmail.includes('lithe') || uUsername === 'litheads'))
       )
     })
 
@@ -179,7 +209,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Wrong password. Please try again.' })
     }
 
-    const company = user.company || ((user.name || '').toLowerCase().includes('piktoria') ? 'piktoria' : 'naj')
+    const company = user.company || ((user.name || '').toLowerCase().includes('piktoria') ? 'piktoria' : (user.name || '').toLowerCase().includes('lithe') ? 'litheads' : 'naj')
 
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, company },

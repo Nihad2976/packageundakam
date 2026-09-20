@@ -1,6 +1,7 @@
 export const COMPANIES = {
   NAJ: 'naj',
   PIKTORIA: 'piktoria',
+  LITHE_ADS: 'litheads',
 }
 
 export const COMPANY_CONFIGS = {
@@ -129,15 +130,89 @@ export const COMPANY_CONFIGS = {
       ],
     },
   },
+  [COMPANIES.LITHE_ADS]: {
+    id: 'litheads',
+    name: 'LITHE ADS',
+    shortName: 'Lithe Ads',
+    tagline: 'for the euphoric moments',
+    theme: {
+      primary: '#32452f',
+      accent: '#445b3f',
+      dark: '#222f20',
+      creamBg: '#f2ede4',
+      bg: '#ffffff',
+    },
+    contact: {
+      phone: '+91 8139 880 797 , +91 9633 088 797 , +91 9745 826 630',
+      phoneDisplay: '+91 8139 880 797',
+      email: 'lithe.adsevents@gmail.com',
+      instagram: 'www.instagram/Lithe_ads',
+      location: 'Southside',
+      addressLine: 'Southside-based wedding company',
+    },
+    invoiceTerms: [
+      'All invoices must be paid according to the payment policy terms unless agreed upon in writing.',
+    ],
+    quotationTerms: [
+      '10% on Booking',
+      '70% on wedding day',
+      '20% after receiving output',
+    ],
+    defaultServices: [
+      { id: 'wedding_album_80p', name: '80 Pages wedding album', category: 'photo', hasLeafCount: true, defaultLeaves: 40 },
+      { id: 'colour_graded_images', name: 'Whole images will be colour graded', category: 'photo' },
+      { id: 'online_gallery', name: 'Online photo gallery', category: 'other' },
+      { id: 'usb_hard_drive', name: 'Usb hard drive', category: 'other' },
+      { id: 'wedding_highlights_lithe', name: 'Wedding highlight video (approx 5-10 min)', category: 'video' },
+      { id: 'social_reels', name: 'Social media reels (30sec each)', category: 'video' },
+      { id: 'pre_wed_reel', name: 'pre wed reel', category: 'video' },
+      { id: 'pre_wed_photos', name: 'pre wed colour graded photos', category: 'photo' },
+      { id: 'pre_wed_shoot', name: 'Pre wed photoshoot and videography', category: 'addon' },
+      { id: 'mini_album', name: 'mini album', category: 'addon' },
+      { id: 'calendar', name: 'calender', category: 'addon' },
+      { id: 'photo_frames', name: 'photo frames', category: 'addon' },
+    ],
+    packagePresets: {
+      with_album: [
+        'wedding_album_80p',
+        'colour_graded_images',
+        'online_gallery',
+        'usb_hard_drive',
+        'wedding_highlights_lithe',
+        'social_reels',
+        'pre_wed_reel',
+        'pre_wed_photos',
+        'pre_wed_shoot',
+        'mini_album',
+        'calendar',
+        'photo_frames',
+      ],
+      without_album: [
+        'colour_graded_images',
+        'online_gallery',
+        'usb_hard_drive',
+        'wedding_highlights_lithe',
+        'social_reels',
+        'pre_wed_reel',
+        'pre_wed_photos',
+        'photo_frames',
+      ],
+    },
+  },
 }
 
 export function getCompanyFromUser(user) {
   if (!user) return COMPANIES.NAJ
   if (user.company === COMPANIES.PIKTORIA) return COMPANIES.PIKTORIA
+  if (user.company === COMPANIES.LITHE_ADS) return COMPANIES.LITHE_ADS
   const lowerName = (user.name || '').toLowerCase()
   const lowerEmail = (user.email || '').toLowerCase()
-  if (lowerName.includes('piktoria') || lowerEmail.includes('piktoria')) {
+  const lowerUsername = (user.username || '').toLowerCase()
+  if (lowerName.includes('piktoria') || lowerEmail.includes('piktoria') || lowerUsername.includes('piktoria')) {
     return COMPANIES.PIKTORIA
+  }
+  if (lowerName.includes('lithe') || lowerEmail.includes('lithe') || lowerUsername.includes('litheads')) {
+    return COMPANIES.LITHE_ADS
   }
   return COMPANIES.NAJ
 }
