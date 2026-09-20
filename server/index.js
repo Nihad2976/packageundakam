@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import authRoutes from './routes/auth.js'
 import quotationRoutes from './routes/quotations.js'
 import invoiceRoutes from './routes/invoices.js'
+import adminRoutes from './routes/admin.js'
 import './config.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -31,6 +32,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/quotations', quotationRoutes)
 app.use('/api/invoices', invoiceRoutes)
+app.use('/api/admin', adminRoutes)
 
 app.listen(PORT, () => {
   console.log(`NAJ Wedding API running on http://localhost:${PORT}`)

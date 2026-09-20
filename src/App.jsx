@@ -1,9 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
+import BlockedScreen from './components/BlockedScreen'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
+import AdminDashboard from './pages/AdminDashboard'
 import QuotationForm from './pages/QuotationForm'
 import { FinalDownloadScreen } from './pages/Preview'
 import InvoiceForm from './pages/InvoiceForm'
@@ -21,7 +24,7 @@ function InvoiceFormRoute() {
 }
 
 function AppRoutes() {
-  const { authenticated, loading } = useAuth()
+  const { user, authenticated, loading } = useAuth()
 
   if (loading) {
     return (
@@ -29,6 +32,10 @@ function AppRoutes() {
         <p>Loading...</p>
       </div>
     )
+  }
+
+  if (authenticated && user?.status === 'blocked' && user?.role !== 'admin') {
+    return <BlockedScreen />
   }
 
   return (
@@ -47,6 +54,14 @@ function AppRoutes() {
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
         }
       />
       <Route

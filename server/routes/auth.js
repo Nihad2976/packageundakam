@@ -4,13 +4,51 @@ import bcrypt from 'bcryptjs'
 import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { JWT_SECRET, authMiddleware } from '../middleware/auth.js'
-import { usersFile } from '../config.js'
+import { getQuotationsFile, usersFile } from '../config.js'
 
 const router = Router()
 
-function readUsers() {
+function getLatestQuotationDate(company) {
+  try {
+    const qFile = getQuotationsFile(company)
+    if (fs.existsSync(qFile)) {
+      const list = JSON.parse(fs.readFileSync(qFile, 'utf-8'))
+      if (Array.isArray(list) && list.length > 0) {
+        const sorted = list
+          .filter((q) => q.updatedAt || q.createdAt)
+          .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+        if (sorted[0]) return sorted[0].updatedAt || sorted[0].createdAt
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null
+}
+
+export function readUsers() {
   if (!fs.existsSync(usersFile)) return []
   const users = JSON.parse(fs.readFileSync(usersFile, 'utf-8'))
+
+  const hasAdmin = users.some(
+    (u) => u.role === 'admin' || u.username === 'admin' || u.email === 'admin@packageundakam.com'
+  )
+  if (!hasAdmin) {
+    const adminUser = {
+      id: 'admin-default-user-id',
+      name: 'System Administrator',
+      email: 'admin@packageundakam.com',
+      username: 'admin',
+      company: 'admin',
+      role: 'admin',
+      status: 'active',
+      paymentStatus: 'paid',
+      password: bcrypt.hashSync('admin123', 10),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    users.push(adminUser)
+  }
 
   const hasNaj = users.some((u) => u.email === 'najwedding@gmail.com' || u.name === 'NAJ Wedding')
   if (!hasNaj) {
@@ -20,6 +58,9 @@ function readUsers() {
       email: 'najwedding@gmail.com',
       username: 'najwedding',
       company: 'naj',
+      role: 'company',
+      status: 'active',
+      paymentStatus: 'paid',
       password: bcrypt.hashSync('najwedding', 10),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -41,6 +82,9 @@ function readUsers() {
       email: 'piktoria@gmail.com',
       username: 'piktoria',
       company: 'piktoria',
+      role: 'company',
+      status: 'active',
+      paymentStatus: 'paid',
       password: '$2b$10$G9gqb0LvD8vgQUFd.cEcBOAVEpB1/svmWuZYrZDwQyUxdij19SJTS',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -62,6 +106,9 @@ function readUsers() {
       email: 'lithe.adsevents@gmail.com',
       username: 'litheads',
       company: 'litheads',
+      role: 'company',
+      status: 'active',
+      paymentStatus: 'paid',
       password: '$2b$10$I/ool2SICjvd69MMwQ6vnOeUDvT46xaS1kspD8IOE6/EVtVG.8sDq',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -69,7 +116,7 @@ function readUsers() {
     users.push(litheAdsUser)
   }
 
-  // Ensure all users have company field set
+  // Ensure all users have company, role, status, paymentStatus fields set
   let updated = false
   for (const u of users) {
     if (!u.company) {
@@ -78,14 +125,36 @@ function readUsers() {
         u.company = 'piktoria'
       } else if (lower.includes('lithe')) {
         u.company = 'litheads'
+      } else if (u.username === 'admin' || u.role === 'admin') {
+        u.company = 'admin'
       } else {
         u.company = 'naj'
       }
       updated = true
     }
+
+    if (!u.role) {
+      u.role = u.username === 'admin' || u.company === 'admin' ? 'admin' : 'company'
+      updated = true
+    }
+
+    if (!u.status) {
+      u.status = 'active'
+      updated = true
+    }
+
+    if (!u.paymentStatus) {
+      u.paymentStatus = 'paid'
+      updated = true
+    }
+
+    if (u.lastUsed === undefined && u.role !== 'admin') {
+      u.lastUsed = getLatestQuotationDate(u.company) || null
+      updated = true
+    }
   }
 
-  if (!hasNaj || !hasPiktoria || !hasLitheAds || updated) {
+  if (!hasAdmin || !hasNaj || !hasPiktoria || !hasLitheAds || updated) {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2))
   }
 
@@ -95,7 +164,7 @@ function readUsers() {
 // Seed on startup
 readUsers()
 
-function writeUsers(data) {
+export function writeUsers(data) {
   fs.writeFileSync(usersFile, JSON.stringify(data, null, 2))
 }
 
@@ -209,17 +278,31 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Wrong password. Please try again.' })
     }
 
-    const company = user.company || ((user.name || '').toLowerCase().includes('piktoria') ? 'piktoria' : (user.name || '').toLowerCase().includes('lithe') ? 'litheads' : 'naj')
+    const company = user.company || ((user.name || '').toLowerCase().includes('piktoria') ? 'piktoria' : (user.name || '').toLowerCase().includes('lithe') ? 'litheads' : user.username === 'admin' ? 'admin' : 'naj')
+    const role = user.role || (user.username === 'admin' ? 'admin' : 'company')
+    const status = user.status || 'active'
+    const paymentStatus = user.paymentStatus || 'paid'
+    const lastUsed = user.lastUsed || null
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name, company },
+      { id: user.id, email: user.email, name: user.name, company, role, status },
       JWT_SECRET,
       { expiresIn: '7d' },
     )
 
     res.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, company },
+      user: {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        company,
+        role,
+        status,
+        paymentStatus,
+        lastUsed,
+      },
     })
   } catch (err) {
     console.error('Login error:', err)
@@ -237,8 +320,13 @@ router.get('/me', authMiddleware, (req, res) => {
       user: {
         id: freshUser.id,
         name: freshUser.name,
+        username: freshUser.username,
         email: freshUser.email,
         company,
+        role: freshUser.role || (freshUser.username === 'admin' ? 'admin' : 'company'),
+        status: freshUser.status || 'active',
+        paymentStatus: freshUser.paymentStatus || 'paid',
+        lastUsed: freshUser.lastUsed || null,
       },
     })
   }
@@ -256,8 +344,13 @@ router.get('/verify', authMiddleware, (req, res) => {
       user: {
         id: freshUser.id,
         name: freshUser.name,
+        username: freshUser.username,
         email: freshUser.email,
         company,
+        role: freshUser.role || (freshUser.username === 'admin' ? 'admin' : 'company'),
+        status: freshUser.status || 'active',
+        paymentStatus: freshUser.paymentStatus || 'paid',
+        lastUsed: freshUser.lastUsed || null,
       },
     })
   }

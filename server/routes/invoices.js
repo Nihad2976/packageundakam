@@ -2,7 +2,7 @@ import { Router } from 'express'
 import fs from 'fs'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { authMiddleware } from '../middleware/auth.js'
+import { authMiddleware, checkBlockedMiddleware } from '../middleware/auth.js'
 import { getInvoicesFile, uploadsDir } from '../config.js'
 
 const router = Router()
@@ -53,11 +53,12 @@ router.get('/:id/pdf', (req, res) => {
 })
 
 router.use(authMiddleware)
+router.use(checkBlockedMiddleware)
 
 router.get('/', (req, res) => {
   const comp = req.user.company || 'naj'
   const invoices = readInvoices(comp)
-    .filter((i) => i.completed && (!i.userId || i.userId === req.user.id))
+    .filter((i) => i.completed)
     .map((i) => ({
       id: i.id,
       displayName: getDisplayName(i),

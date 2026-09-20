@@ -2,10 +2,30 @@ import { Router } from 'express'
 import fs from 'fs'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { authMiddleware } from '../middleware/auth.js'
+import { authMiddleware, checkBlockedMiddleware } from '../middleware/auth.js'
 import { getQuotationsFile, uploadsDir, najDataDir, piktoriaDataDir } from '../config.js'
+import { readUsers, writeUsers } from './auth.js'
 
 const router = Router()
+
+function recordCompanyUsage(userId, company) {
+  try {
+    const users = readUsers()
+    let changed = false
+    const now = new Date().toISOString()
+    for (const u of users) {
+      if ((userId && u.id === userId) || (company && u.company === company && u.role !== 'admin')) {
+        u.lastUsed = now
+        changed = true
+      }
+    }
+    if (changed) {
+      writeUsers(users)
+    }
+  } catch (err) {
+    console.error('Failed to record company usage:', err)
+  }
+}
 
 function readQuotations(company = 'naj') {
   const file = getQuotationsFile(company)
@@ -58,11 +78,12 @@ router.get('/:id/pdf', (req, res) => {
 })
 
 router.use(authMiddleware)
+router.use(checkBlockedMiddleware)
 
 router.get('/', (req, res) => {
   const comp = req.user.company || 'naj'
   const quotations = readQuotations(comp)
-    .filter((q) => q.completed && (!q.userId || q.userId === req.user.id))
+    .filter((q) => q.completed)
     .map((q) => ({
       id: q.id,
       displayName: getDisplayName(q),
@@ -99,6 +120,7 @@ router.post('/', (req, res) => {
   const quotations = readQuotations(comp)
   quotations.push(quotation)
   writeQuotations(comp, quotations)
+  recordCompanyUsage(req.user.id, comp)
 
   res.status(201).json(quotation)
 })
@@ -118,6 +140,7 @@ router.put('/:id', (req, res) => {
   }
 
   writeQuotations(comp, quotations)
+  recordCompanyUsage(req.user.id, comp)
   res.json(quotations[index])
 })
 
@@ -168,6 +191,7 @@ router.post('/:id/pdf', (req, res) => {
   }
 
   writeQuotations(comp, quotations)
+  recordCompanyUsage(req.user.id, comp)
   res.json({ pdfPath: storedName, fileName: safeName })
 })
 

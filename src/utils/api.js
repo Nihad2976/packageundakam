@@ -106,6 +106,21 @@ export const api = {
     }
     return res.blob()
   },
+
+  // Admin APIs
+  getAdminCompanies: () => request('/admin/companies'),
+
+  updateCompanyStatus: (id, status) =>
+    request(`/admin/companies/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    }),
+
+  updateCompanyPayment: (id, paymentStatus) =>
+    request(`/admin/companies/${id}/payment`, {
+      method: 'PUT',
+      body: JSON.stringify({ paymentStatus }),
+    }),
 }
 
 export function setToken(token) {
