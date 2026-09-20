@@ -144,21 +144,7 @@ function ClientStep({ data, onChange, company }) {
 
       <div className="greeting-preview">
         <span>Greeting preview:</span>
-        <strong>
-          {data.greeting?.trim() || buildGreeting(data.clientType, data.groomName, data.brideName)}
-        </strong>
-      </div>
-
-      <div className="form-field" style={{ marginTop: '16px' }}>
-        <label htmlFor="customGreeting">Custom Greeting Override (Optional)</label>
-        <input
-          id="customGreeting"
-          type="text"
-          value={data.greeting || ''}
-          onChange={(e) => onChange({ greeting: e.target.value })}
-          placeholder="e.g. Hi Ms. Ruksana or Hi Rukzana Gafoor"
-        />
-        <p className="form-hint">Leave blank to use the standard greeting preview above.</p>
+        <strong>{buildGreeting(data.clientType, data.groomName, data.brideName)}</strong>
       </div>
     </div>
   )
