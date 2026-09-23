@@ -168,10 +168,11 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
     if (!events && quotation.coverages && quotation.coverages.length > 0) {
       events = quotation.coverages.map((cov) => {
         const title = cov.customName?.trim() || getCoverageLabel(cov)
+        const dateStr = cov.date?.trim() || (cov.month && cov.day ? `${cov.month} ${cov.day}` : (cov.month || cov.day || ''))
         const activeRoles = getActiveRoles(cov)
         const roleLabel = (roleId) => FEWDAYS_TEAM_ROLES.find((r) => r.id === roleId)?.label || TEAM_ROLES.find((r) => r.id === roleId)?.label || roleId
         const services = activeRoles.map((r) => `${r.quantity} ${roleLabel(r.id)}`)
-        return { name: title, services }
+        return { name: title, date: dateStr, services }
       })
     }
     if (!events || events.length === 0) {
@@ -251,7 +252,10 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
             <div className="fewdays-events-list">
               {events.map((ev, idx) => (
                 <div key={idx} className="fewdays-event-block">
-                  <div className="fewdays-event-title">{ev.name}</div>
+                  <div className="fewdays-event-title">
+                    {ev.name}
+                    {ev.date ? <span className="fewdays-event-date" style={{ marginLeft: '6px', fontSize: '12px', fontWeight: '500', opacity: 0.9 }}>({ev.date})</span> : null}
+                  </div>
                   {ev.services && ev.services.length > 0 && (
                     <div className="fewdays-event-services">
                       {ev.services.map((srv, sIdx) => (

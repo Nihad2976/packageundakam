@@ -224,8 +224,8 @@ function CoverageStep({ data, onChange, company }) {
   const teamRoles = getTeamRolesForCompany(currentCompany)
   const [showAddMenu, setShowAddMenu] = useState(false)
 
-  const addCoverage = (type) => {
-    const newCoverage = createEmptyCoverage(type, '', null, '', currentCompany)
+  const addCoverage = (type, customName = '') => {
+    const newCoverage = createEmptyCoverage(type, customName, null, '', currentCompany)
     onChange({ coverages: [...data.coverages, newCoverage] })
     setShowAddMenu(false)
   }
@@ -349,28 +349,45 @@ function CoverageStep({ data, onChange, company }) {
           >
             {isFewdays ? (
               <>
-                <div className="form-field-sm" style={{ flex: '1 1 240px', minWidth: '200px' }}>
-                  <label htmlFor={`coverage-name-${coverage.id}`}>Event Name</label>
-                  <input
-                    id={`coverage-name-${coverage.id}`}
-                    type="text"
-                    placeholder="e.g. Mehandi Night or Wedding Day"
-                    value={coverage.customName || ''}
-                    onChange={(e) => updateCoverage(coverage.id, { customName: e.target.value })}
+                <div className="form-field-sm" style={{ flex: '0 0 160px', minWidth: '140px' }}>
+                  <label htmlFor={`coverage-month-${coverage.id}`}>Month</label>
+                  <select
+                    id={`coverage-month-${coverage.id}`}
+                    value={coverage.month || ''}
+                    onChange={(e) => {
+                      const newMonth = e.target.value
+                      const day = coverage.day || ''
+                      const dateStr = [newMonth, day].filter(Boolean).join(' ')
+                      updateCoverage(coverage.id, { month: newMonth, date: dateStr })
+                    }}
+                    className="select-input"
                     style={{
                       width: '100%',
                       boxSizing: 'border-box',
                     }}
-                  />
+                  >
+                    <option value="">Select Month</option>
+                    {MONTHS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div className="form-field-sm" style={{ flex: '0 0 160px', minWidth: '130px' }}>
-                  <label htmlFor={`coverage-date-${coverage.id}`}>Event Date (Optional)</label>
+
+                <div className="form-field-sm" style={{ flex: '0 0 140px', minWidth: '120px' }}>
+                  <label htmlFor={`coverage-day-${coverage.id}`}>Date</label>
                   <input
-                    id={`coverage-date-${coverage.id}`}
+                    id={`coverage-day-${coverage.id}`}
                     type="text"
-                    placeholder="e.g. Dec 12"
-                    value={coverage.date || ''}
-                    onChange={(e) => updateCoverage(coverage.id, { date: e.target.value })}
+                    placeholder="e.g. 12 or 12th"
+                    value={coverage.day || ''}
+                    onChange={(e) => {
+                      const newDay = e.target.value
+                      const month = coverage.month || ''
+                      const dateStr = [month, newDay].filter(Boolean).join(' ')
+                      updateCoverage(coverage.id, { day: newDay, date: dateStr })
+                    }}
                     style={{
                       width: '100%',
                       boxSizing: 'border-box',
@@ -427,60 +444,63 @@ function CoverageStep({ data, onChange, company }) {
                     ))}
                   </select>
                 </div>
+
+                <div
+                  className="form-field-sm"
+                  style={{ flex: '1 1 240px', minWidth: '200px' }}
+                >
+                  <label>Event Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Mehandi night or Wedding day"
+                    value={coverage.customName || ''}
+                    onChange={(e) => updateCoverage(coverage.id, { customName: e.target.value })}
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
               </>
             ) : (
-              <div className="form-field-sm">
-                <label>Event Date</label>
-                <input
-                  type="text"
-                  placeholder="e.g. July 23"
-                  value={coverage.date || ''}
-                  onChange={(e) => updateCoverage(coverage.id, { date: e.target.value })}
-                />
-              </div>
-            )}
+              <>
+                <div className="form-field-sm">
+                  <label>Event Date</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. July 23"
+                    value={coverage.date || ''}
+                    onChange={(e) => updateCoverage(coverage.id, { date: e.target.value })}
+                  />
+                </div>
 
-            <div
-              className="form-field-sm"
-              style={isLitheAds ? { flex: '1 1 240px', minWidth: '200px' } : undefined}
-            >
-              <label>{isLitheAds ? 'Event Name' : 'Side / Section'}</label>
-              {isLitheAds ? (
-                <input
-                  type="text"
-                  placeholder="e.g. Mehandi night or Wedding day"
-                  value={coverage.customName || ''}
-                  onChange={(e) => updateCoverage(coverage.id, { customName: e.target.value })}
-                  style={{
-                    width: '100%',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              ) : (
-                <select
-                  value={coverage.side || COVERAGE_SIDES.BRIDE}
-                  onChange={(e) => updateCoverage(coverage.id, { side: e.target.value })}
-                  className="select-input"
-                >
-                  {Object.entries(COVERAGE_SIDE_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
+                <div className="form-field-sm">
+                  <label>Side / Section</label>
+                  <select
+                    value={coverage.side || COVERAGE_SIDES.BRIDE}
+                    onChange={(e) => updateCoverage(coverage.id, { side: e.target.value })}
+                    className="select-input"
+                  >
+                    {Object.entries(COVERAGE_SIDE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            {!isLitheAds && coverage.type === COVERAGE_TYPES.CUSTOM && (
-              <div className="form-field-sm full-width">
-                <label>Event Title</label>
-                <input
-                  type="text"
-                  placeholder="Event title"
-                  value={coverage.customName || ''}
-                  onChange={(e) => updateCoverage(coverage.id, { customName: e.target.value })}
-                />
-              </div>
+                {coverage.type === COVERAGE_TYPES.CUSTOM && (
+                  <div className="form-field-sm full-width">
+                    <label>Event Title</label>
+                    <input
+                      type="text"
+                      placeholder="Event title"
+                      value={coverage.customName || ''}
+                      onChange={(e) => updateCoverage(coverage.id, { customName: e.target.value })}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -512,13 +532,46 @@ function CoverageStep({ data, onChange, company }) {
 
       <div className="add-coverage-wrapper">
         {isFewdays ? (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={addCustomCoverage}
-          >
-            + ADD EVENT
-          </button>
+          <>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setShowAddMenu(!showAddMenu)}
+            >
+              + ADD COVERAGE EVENT
+            </button>
+            {showAddMenu && (
+              <div className="add-coverage-menu">
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.CUSTOM, 'Mehandi Night')}>
+                  Mehandi Night
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_DAY)}>
+                  Wedding Day
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_NIKKAH)}>
+                  Wedding Nikkah
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_RECEPTION)}>
+                  Wedding Reception
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.HALDI)}>
+                  Haldi
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.ENGAGEMENT)}>
+                  Engagement
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.BRIDE_EVE)}>
+                  Bride Eve
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.GROOM_EVE)}>
+                  Groom Eve
+                </button>
+                <button type="button" onClick={addCustomCoverage}>
+                  + Custom Event (Enter Name)
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <>
             <button
