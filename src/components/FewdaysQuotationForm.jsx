@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import { api } from '../utils/api'
-import { generateQuotationPdf, downloadPdfBytes } from '../utils/pdf'
+import { generateQuotationPdf, downloadPdfBytes, pdfBytesToBase64 } from '../utils/pdf'
 import QuotationPage2 from './QuotationPage2'
 
 const DEFAULT_EVENTS = [
@@ -38,7 +37,6 @@ const DEFAULT_DELIVERABLES = [
 
 export default function FewdaysQuotationForm({ initialData = null, quotationId: initialQuotationId = null }) {
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   const [clientName, setClientName] = useState(initialData?.clientName || 'Safwan')
   const [events, setEvents] = useState(
@@ -56,7 +54,17 @@ export default function FewdaysQuotationForm({ initialData = null, quotationId: 
   const [generating, setGenerating] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
 
-  const page2Ref = useRef(null)
+  useEffect(() => {
+    if (initialData) {
+      if (initialData.clientName !== undefined) setClientName(initialData.clientName)
+      if (initialData.events && initialData.events.length > 0) setEvents(initialData.events)
+      if (initialData.deliverables && initialData.deliverables.length > 0) setDeliverables(initialData.deliverables)
+      if (initialData.price !== undefined) setPrice(initialData.price)
+    }
+    if (initialQuotationId) {
+      setQuotationId(initialQuotationId)
+    }
+  }, [initialData, initialQuotationId])
 
   // Format price in Indian Rupee format
   const formattedPrice = Number(price || 0).toLocaleString('en-IN')
@@ -180,9 +188,20 @@ export default function FewdaysQuotationForm({ initialData = null, quotationId: 
 
       const pdfBytes = await generateQuotationPdf(page2El, 'fewdays', quotationData)
 
-      // 3. Trigger download
+      // 3. Save PDF to backend so Dashboard download works
       const safeName = (clientName || 'Safwan').trim().replace(/[^a-zA-Z0-9_-]/g, '_')
-      await downloadPdfBytes(pdfBytes, `Fewdays_Stories_Quotation_${safeName}.pdf`)
+      const fileName = `Fewdays_Stories_Quotation_${safeName}.pdf`
+      try {
+        if (savedId) {
+          const base64 = pdfBytesToBase64(pdfBytes)
+          await api.savePdf(savedId, base64, fileName)
+        }
+      } catch (pdfSaveErr) {
+        console.warn('Could not save PDF to backend:', pdfSaveErr)
+      }
+
+      // 4. Trigger download
+      await downloadPdfBytes(pdfBytes, fileName)
 
       setStatusMessage('Quotation generated and downloaded successfully!')
       setTimeout(() => setStatusMessage(''), 4000)

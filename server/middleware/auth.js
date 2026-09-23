@@ -23,6 +23,7 @@ export function authMiddleware(req, res, next) {
     let status = decoded.status || 'active'
     let paymentStatus = decoded.paymentStatus || 'paid'
 
+    let company = decoded.company
     // Fetch fresh user record from usersFile if available
     try {
       if (fs.existsSync(usersFile)) {
@@ -32,17 +33,28 @@ export function authMiddleware(req, res, next) {
           role = fresh.role || (fresh.username === 'admin' ? 'admin' : 'company')
           status = fresh.status || 'active'
           paymentStatus = fresh.paymentStatus || 'paid'
+          if (fresh.company) {
+            company = fresh.company
+          }
         }
       }
     } catch (e) {
       console.warn('Error reading fresh user in authMiddleware:', e)
     }
 
+    if (!company) {
+      const lower = ((decoded.name || '') + ' ' + (decoded.email || '')).toLowerCase()
+      if (lower.includes('fewday')) company = 'fewdays'
+      else if (lower.includes('piktoria')) company = 'piktoria'
+      else if (lower.includes('lithe')) company = 'litheads'
+      else company = 'naj'
+    }
+
     req.user = {
       id: decoded.id,
       email: decoded.email,
       name: decoded.name,
-      company: decoded.company || (decoded.name?.toLowerCase().includes('piktoria') ? 'piktoria' : 'naj'),
+      company,
       role,
       status,
       paymentStatus,

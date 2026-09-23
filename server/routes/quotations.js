@@ -39,7 +39,7 @@ function writeQuotations(company = 'naj', data = []) {
 }
 
 function findQuotationAcrossCompanies(id) {
-  for (const comp of ['naj', 'piktoria', 'litheads']) {
+  for (const comp of ['naj', 'piktoria', 'litheads', 'fewdays']) {
     const list = readQuotations(comp)
     const found = list.find((q) => q.id === id)
     if (found) return { quotation: found, company: comp }
@@ -112,8 +112,8 @@ router.post('/', (req, res) => {
   const quotation = {
     id: uuidv4(),
     userId: req.user.id,
-    company: comp,
     ...req.body,
+    company: comp,
     completed: req.body.completed ?? false,
     createdAt: now,
     updatedAt: now,

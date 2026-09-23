@@ -275,6 +275,44 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
 }
 
 export function createEmptyQuotation(company = 'naj') {
+  if (company === 'fewdays') {
+    return {
+      company: 'fewdays',
+      clientName: 'Safwan',
+      events: [
+        {
+          id: '1',
+          name: 'Mehandi Night',
+          services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
+        },
+        {
+          id: '2',
+          name: 'Wedding Day',
+          services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
+        },
+      ],
+      deliverables: [
+        'Edited Photos',
+        'Spot Edited Photos (For Story/Status)',
+        'Couple Reel',
+        'Function Reel',
+        'Complimentary Post-Wedding Shoot (Photo & Video)',
+        '40 Leaf Premium Luster Laminated Album',
+        '10 Extra Leaves (Complimentary)',
+        '10 Leaf Mini Album',
+        'Photo Calendar',
+        'Photo Frame',
+        'Wedding Highlights (3 to 7 min)',
+        'Wedding Full Length Video (10+ min)',
+        'Drone Service',
+        'Live QR Photo Service',
+        'Soft Copy (Provided via Pendrive)',
+      ],
+      price: 119000,
+      completed: true,
+    }
+  }
+
   if (company === 'litheads') {
     return {
       clientName: '',

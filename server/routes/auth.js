@@ -353,7 +353,8 @@ router.get('/me', authMiddleware, (req, res) => {
   const users = readUsers()
   const freshUser = users.find((u) => u.id === req.user.id || u.email === req.user.email)
   if (freshUser) {
-    const company = freshUser.company || ((freshUser.name || '').toLowerCase().includes('piktoria') ? 'piktoria' : 'naj')
+    const compLower = ((freshUser.name || '') + ' ' + (freshUser.email || '') + ' ' + (freshUser.username || '')).toLowerCase()
+    const company = freshUser.company || (compLower.includes('fewday') ? 'fewdays' : compLower.includes('piktoria') ? 'piktoria' : compLower.includes('lithe') ? 'litheads' : 'naj')
     return res.json({
       user: {
         id: freshUser.id,
@@ -376,7 +377,8 @@ router.get('/verify', authMiddleware, (req, res) => {
   const users = readUsers()
   const freshUser = users.find((u) => u.id === req.user.id || u.email === req.user.email)
   if (freshUser) {
-    const company = freshUser.company || ((freshUser.name || '').toLowerCase().includes('piktoria') ? 'piktoria' : 'naj')
+    const compLower = ((freshUser.name || '') + ' ' + (freshUser.email || '') + ' ' + (freshUser.username || '')).toLowerCase()
+    const company = freshUser.company || (compLower.includes('fewday') ? 'fewdays' : compLower.includes('piktoria') ? 'piktoria' : compLower.includes('lithe') ? 'litheads' : 'naj')
     return res.json({
       valid: true,
       user: {
