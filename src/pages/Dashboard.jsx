@@ -117,6 +117,12 @@ export default function Dashboard() {
   }
 
   // Determine active company
+  const isFewdays =
+    company === 'fewdays' ||
+    user?.company === 'fewdays' ||
+    (user?.name || '').toLowerCase().includes('fewday') ||
+    (user?.email || '').toLowerCase().includes('fewday')
+
   const isPiktoria =
     company === 'piktoria' ||
     user?.company === 'piktoria' ||
@@ -129,8 +135,16 @@ export default function Dashboard() {
     (user?.name || '').toLowerCase().includes('lithe') ||
     (user?.email || '').toLowerCase().includes('lithe')
 
-  const currentUserName = user?.name || (isLitheAds ? 'Lithe Ads' : isPiktoria ? 'Piktoria Weddings' : 'NAJ Wedding')
-  const userInitials = isLitheAds ? 'LA' : isPiktoria ? 'PW' : getInitials(currentUserName)
+  const currentUserName =
+    user?.name ||
+    (isFewdays
+      ? 'FEWDAYS STORIES'
+      : isLitheAds
+        ? 'Lithe Ads'
+        : isPiktoria
+          ? 'Piktoria Weddings'
+          : 'NAJ Wedding')
+  const userInitials = isFewdays ? 'FD' : isLitheAds ? 'LA' : isPiktoria ? 'PW' : getInitials(currentUserName)
 
   return (
     <div className="app-layout">

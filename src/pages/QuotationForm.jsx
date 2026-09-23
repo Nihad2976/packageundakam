@@ -28,6 +28,7 @@ import {
   parseMonthAndDay,
 } from '../utils/quotation'
 import { api } from '../utils/api'
+import FewdaysQuotationForm from '../components/FewdaysQuotationForm'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar'
 
@@ -742,6 +743,8 @@ export default function QuotationForm() {
           coverages: q.coverages || [],
           completed: q.completed,
           company: q.company || company,
+          events: q.events || [],
+          deliverables: q.deliverables || [],
         })
         setQuotationId(q.id)
         setMaxStep(FORM_STEPS.length - 1)
@@ -829,6 +832,17 @@ export default function QuotationForm() {
     return (
       <div className="loading-screen">
         <p>Loading quotation...</p>
+      </div>
+    )
+  }
+
+  if (company === 'fewdays' || data.company === 'fewdays') {
+    return (
+      <div className="app-layout">
+        <Sidebar activeTab="quotation" />
+        <main className="main-viewport">
+          <FewdaysQuotationForm initialData={data} quotationId={quotationId} />
+        </main>
       </div>
     )
   }

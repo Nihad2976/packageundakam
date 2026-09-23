@@ -81,5 +81,19 @@
     "password": "$2b$10$tShsMUt7mjzNl1Li5OnMRuJ/OUr0F16g9AccCHKEu/Moe2dwvQWgi",
     "createdAt": "2026-09-20T13:48:13.455Z",
     "updatedAt": "2026-09-20T13:48:13.456Z"
+  },
+  {
+    "id": "fewdays-stories-default-user-id",
+    "name": "FEWDAYS STORIES",
+    "email": "fewdaysstories@gmail.com",
+    "username": "fewdays",
+    "company": "fewdays",
+    "role": "company",
+    "status": "active",
+    "paymentStatus": "paid",
+    "password": "$2b$10$5mK0CuQO2MkWad63ffpyx.UsejM7dA9VhYgUxuzsYW2xtxR4qUKs6",
+    "createdAt": "2026-09-22T17:13:28.167Z",
+    "updatedAt": "2026-09-22T17:13:28.168Z",
+    "lastUsed": null
   }
 ]

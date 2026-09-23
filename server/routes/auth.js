@@ -116,12 +116,39 @@ export function readUsers() {
     users.push(litheAdsUser)
   }
 
+  const hasFewdays = users.some(
+    (u) =>
+      u.email === 'fewdaysstories@gmail.com' ||
+      u.username === 'fewdays' ||
+      u.username === 'fewdaysstories' ||
+      u.company === 'fewdays'
+  )
+  if (!hasFewdays) {
+    const fewdaysPassword = process.env.FEWDAYS_QUOTATION_PASSWORD || 'safwan191'
+    const fewdaysUser = {
+      id: 'fewdays-stories-default-user-id',
+      name: 'FEWDAYS STORIES',
+      email: 'fewdaysstories@gmail.com',
+      username: 'fewdays',
+      company: 'fewdays',
+      role: 'company',
+      status: 'active',
+      paymentStatus: 'paid',
+      password: bcrypt.hashSync(fewdaysPassword, 10),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    users.push(fewdaysUser)
+  }
+
   // Ensure all users have company, role, status, paymentStatus fields set
   let updated = false
   for (const u of users) {
     if (!u.company) {
       const lower = (u.name || '').toLowerCase()
-      if (lower.includes('piktoria')) {
+      if (lower.includes('fewday')) {
+        u.company = 'fewdays'
+      } else if (lower.includes('piktoria')) {
         u.company = 'piktoria'
       } else if (lower.includes('lithe')) {
         u.company = 'litheads'
@@ -154,7 +181,7 @@ export function readUsers() {
     }
   }
 
-  if (!hasAdmin || !hasNaj || !hasPiktoria || !hasLitheAds || updated) {
+  if (!hasAdmin || !hasNaj || !hasPiktoria || !hasLitheAds || !hasFewdays || updated) {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2))
   }
 
@@ -265,7 +292,8 @@ router.post('/login', async (req, res) => {
         uName === cleanInput ||
         (cleanInput === 'najwedding' && (uName.includes('naj') || uEmail.includes('naj'))) ||
         (cleanInput === 'piktoria' && (uName.includes('piktoria') || uEmail.includes('piktoria') || uUsername === 'piktoria')) ||
-        (cleanInput === 'litheads' && (uName.includes('lithe') || uEmail.includes('lithe') || uUsername === 'litheads'))
+        (cleanInput === 'litheads' && (uName.includes('lithe') || uEmail.includes('lithe') || uUsername === 'litheads')) ||
+        ((cleanInput === 'fewdays' || cleanInput === 'fewdaysstories') && (uName.includes('fewday') || uEmail.includes('fewday') || uUsername.includes('fewday') || u.company === 'fewdays'))
       )
     })
 
@@ -278,7 +306,17 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Wrong password. Please try again.' })
     }
 
-    const company = user.company || ((user.name || '').toLowerCase().includes('piktoria') ? 'piktoria' : (user.name || '').toLowerCase().includes('lithe') ? 'litheads' : user.username === 'admin' ? 'admin' : 'naj')
+    const company =
+      user.company ||
+      ((user.name || '').toLowerCase().includes('fewday')
+        ? 'fewdays'
+        : (user.name || '').toLowerCase().includes('piktoria')
+          ? 'piktoria'
+          : (user.name || '').toLowerCase().includes('lithe')
+            ? 'litheads'
+            : user.username === 'admin'
+              ? 'admin'
+              : 'naj')
     const role = user.role || (user.username === 'admin' ? 'admin' : 'company')
     const status = user.status || 'active'
     const paymentStatus = user.paymentStatus || 'paid'

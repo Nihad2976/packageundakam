@@ -12,12 +12,14 @@ import {
 import { PAYMENT_TERMS, TEAM_ROLES, SERVICES, PIKTORIA_SERVICES, LITHE_ADS_SERVICES } from '../constants/quotation'
 import { useAuth } from '../context/AuthContext'
 import piktoriaPage2Bg from '../assets/piktoria_page2_clean_bg.png'
+import fewdaysPage2Bg from '../assets/fewdays_page2_clean_bg.png'
 
 export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-page-2', company: forcedCompany }) {
   const { company: authCompany } = useAuth() || {}
   const company = forcedCompany || quotation?.company || authCompany || 'naj'
   const isPiktoria = company === 'piktoria'
   const isLitheAds = company === 'litheads'
+  const isFewdays = company === 'fewdays'
 
   const greeting = buildGreeting(
     quotation.clientType,
@@ -156,6 +158,108 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
 
           {/* 5. Total */}
           <div className="litheads-total-row">Total : {totalDisplay}</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isFewdays) {
+    const events = quotation.events || [
+      {
+        name: 'Mehandi Night',
+        services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
+      },
+      {
+        name: 'Wedding Day',
+        services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
+      },
+    ]
+
+    const deliverables = quotation.deliverables || [
+      'Edited Photos',
+      'Spot Edited Photos (For Story/Status)',
+      'Couple Reel',
+      'Function Reel',
+      'Complimentary Post-Wedding Shoot (Photo & Video)',
+      '40 Leaf Premium Luster Laminated Album',
+      '10 Extra Leaves (Complimentary)',
+      '10 Leaf Mini Album',
+      'Photo Calendar',
+      'Photo Frame',
+      'Wedding Highlights (3 to 7 min)',
+      'Wedding Full Length Video (10+ min)',
+      'Drone Service',
+      'Live QR Photo Service',
+      'Soft Copy (Provided via Pendrive)',
+    ]
+
+    const rawPrice = quotation.price ?? 119000
+    const formattedPrice = Number(rawPrice).toLocaleString('en-IN')
+
+    const totalCount = deliverables.length + events.reduce((s, e) => s + (e.services?.length || 0), 0)
+    const compactClass = totalCount > 24 ? 'fewdays-ultra-compact' : totalCount > 18 ? 'fewdays-compact' : ''
+
+    return (
+      <div
+        id={id}
+        className={`pdf-template-page2 fewdays-theme ${compactClass}`}
+        style={{ transform: scale !== 1 ? `scale(${scale})` : undefined, transformOrigin: 'top left' }}
+      >
+        <img
+          src={fewdaysPage2Bg}
+          alt=""
+          className="fewdays-page2-bg"
+          aria-hidden="true"
+        />
+
+        <div className="fewdays-page2-content">
+          {/* 1. Service Overview */}
+          <section className="fewdays-section fewdays-service-overview">
+            <h2 className="fewdays-heading">Service Overview</h2>
+            <div className="fewdays-events-list">
+              {events.map((ev, idx) => (
+                <div key={idx} className="fewdays-event-block">
+                  <div className="fewdays-event-title">{ev.name}</div>
+                  {ev.services && ev.services.length > 0 && (
+                    <div className="fewdays-event-services">
+                      {ev.services.map((srv, sIdx) => (
+                        <div key={sIdx} className="fewdays-service-line">{srv}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 2. Deliverables */}
+          <section className="fewdays-section fewdays-deliverables">
+            <h2 className="fewdays-heading">Deliverables</h2>
+            <ul className="fewdays-deliverables-list">
+              {deliverables.map((item, dIdx) => (
+                <li key={dIdx} className="fewdays-deliverable-item">
+                  <span className="fewdays-bullet">•</span> {item}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* 3. Payment Terms */}
+          <section className="fewdays-section fewdays-payment-terms">
+            <h3 className="fewdays-payment-heading">Payment Terms</h3>
+            <div className="fewdays-package-cost">
+              <span className="fewdays-bullet">•</span> Total Package Cost: ₹{formattedPrice}
+            </div>
+            <div className="fewdays-schedule-label">Payment schedule:</div>
+            <ul className="fewdays-schedule-list">
+              <li><span className="fewdays-bullet">•</span> Advance: 4% (Booking confirmation)</li>
+              <li><span className="fewdays-bullet">•</span> On Wedding Day: 66%</li>
+              <li><span className="fewdays-bullet">•</span> After Final Delivery: 30%</li>
+            </ul>
+            <p className="fewdays-final-note">
+              Final deliverables (album/video/soft copy) will be released only after full payment is completed.
+            </p>
+          </section>
         </div>
       </div>
     )

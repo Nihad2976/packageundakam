@@ -2,6 +2,7 @@ export const COMPANIES = {
   NAJ: 'naj',
   PIKTORIA: 'piktoria',
   LITHE_ADS: 'litheads',
+  FEWDAYS: 'fewdays',
 }
 
 export const COMPANY_CONFIGS = {
@@ -199,15 +200,77 @@ export const COMPANY_CONFIGS = {
       ],
     },
   },
+  [COMPANIES.FEWDAYS]: {
+    id: 'fewdays',
+    name: 'FEWDAYS STORIES',
+    shortName: 'Fewdays Stories',
+    tagline: 'WEDDING PHOTOGRAPHY & VIDEOGRAPHY',
+    theme: {
+      primary: '#97342c',
+      accent: '#80261f',
+      dark: '#3b1c18',
+      creamBg: '#f0ece1',
+      bg: '#f0ece1',
+    },
+    contact: {
+      phone: '+91 97456 66191',
+      phoneDisplay: '+91 97456 66191',
+      email: 'fewdaysstories@gmail.com',
+      instagram: 'fewdays.stories',
+      website: 'https://fewdaysstories.wfolio.pro',
+      location: 'Guruvayoor, Kerala',
+      addressLine: 'Guruvayoor, Kerala',
+    },
+    invoiceTerms: [
+      'All invoices must be paid within 5 days from the date of the invoice unless otherwise agreed upon in writing. Late payments may incur additional charges.',
+    ],
+    quotationTerms: [
+      'Advance: 4% (Booking confirmation)',
+      'On Wedding Day: 66%',
+      'After Final Delivery: 30%',
+    ],
+    defaultEvents: [
+      {
+        name: 'Mehandi Night',
+        services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
+      },
+      {
+        name: 'Wedding Day',
+        services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
+      },
+    ],
+    defaultDeliverables: [
+      'Edited Photos',
+      'Spot Edited Photos (For Story/Status)',
+      'Couple Reel',
+      'Function Reel',
+      'Complimentary Post-Wedding Shoot (Photo & Video)',
+      '40 Leaf Premium Luster Laminated Album',
+      '10 Extra Leaves (Complimentary)',
+      '10 Leaf Mini Album',
+      'Photo Calendar',
+      'Photo Frame',
+      'Wedding Highlights (3 to 7 min)',
+      'Wedding Full Length Video (10+ min)',
+      'Drone Service',
+      'Live QR Photo Service',
+      'Soft Copy (Provided via Pendrive)',
+    ],
+    defaultPrice: 119000,
+  },
 }
 
 export function getCompanyFromUser(user) {
   if (!user) return COMPANIES.NAJ
+  if (user.company === COMPANIES.FEWDAYS) return COMPANIES.FEWDAYS
   if (user.company === COMPANIES.PIKTORIA) return COMPANIES.PIKTORIA
   if (user.company === COMPANIES.LITHE_ADS) return COMPANIES.LITHE_ADS
   const lowerName = (user.name || '').toLowerCase()
   const lowerEmail = (user.email || '').toLowerCase()
   const lowerUsername = (user.username || '').toLowerCase()
+  if (lowerName.includes('fewday') || lowerEmail.includes('fewday') || lowerUsername.includes('fewday')) {
+    return COMPANIES.FEWDAYS
+  }
   if (lowerName.includes('piktoria') || lowerEmail.includes('piktoria') || lowerUsername.includes('piktoria')) {
     return COMPANIES.PIKTORIA
   }

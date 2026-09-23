@@ -4,6 +4,7 @@ import fontkit from '@pdf-lib/fontkit'
 import sourcePdfUrl from '../assets/shahana sabir.pdf?url'
 import piktoriaPdfUrl from '../assets/PIKTORIA.pdf?url'
 import litheAdsPdfUrl from '../assets/LitheAds.pdf?url'
+import fewdaysPdfUrl from '../assets/FEWDAYS.pdf?url'
 import quicksandFontUrl from '../assets/Quicksand-SemiBold.ttf?url'
 
 const A4_WIDTH = 595.28
@@ -65,13 +66,16 @@ export async function generateQuotationPdf(page2Element, company = 'naj', quotat
     await document.fonts.ready
   }
 
+  const isFewdays = company === 'fewdays'
   const isLitheAds = company === 'litheads'
   const templateUrl =
-    isLitheAds
-      ? litheAdsPdfUrl
-      : company === 'piktoria'
-        ? piktoriaPdfUrl
-        : sourcePdfUrl
+    isFewdays
+      ? fewdaysPdfUrl
+      : isLitheAds
+        ? litheAdsPdfUrl
+        : company === 'piktoria'
+          ? piktoriaPdfUrl
+          : sourcePdfUrl
   const sourceBytes = await fetch(templateUrl).then((r) => r.arrayBuffer())
   const sourceDoc = await PDFDocument.load(sourceBytes)
   const pages = sourceDoc.getPages()
@@ -101,7 +105,46 @@ export async function generateQuotationPdf(page2Element, company = 'naj', quotat
   const [page1] = await finalDoc.copyPages(sourceDoc, [0])
   finalDoc.addPage(page1)
 
-  if (isLitheAds) {
+  if (isFewdays) {
+    let clientName = quotation?.clientName?.trim()
+    if (!clientName) {
+      clientName = quotation?.brideName?.trim() || quotation?.groomName?.trim() || 'Safwan'
+    }
+
+    const greeting = clientName.toLowerCase().startsWith('hello ')
+      ? (clientName.endsWith(',') ? clientName : `${clientName},`)
+      : `Hello ${clientName},`
+
+    // Cover original 'Hello Safwan,' text with exact cream background rectangle
+    page1.drawRectangle({
+      x: 20,
+      y: 175,
+      width: 75,
+      height: 6,
+      color: rgb(0.9412, 0.9255, 0.8824),
+    })
+
+    try {
+      finalDoc.registerFontkit(fontkit)
+      const fontBytes = await fetch(quicksandFontUrl).then((r) => r.arrayBuffer())
+      const quicksandFont = await finalDoc.embedFont(fontBytes)
+      page1.drawText(greeting, {
+        x: 20.6,
+        y: 176.2,
+        size: 3.3,
+        font: quicksandFont,
+        color: rgb(0, 0, 0),
+      })
+    } catch (err) {
+      console.warn('Custom font embedding failed, using fallback:', err)
+      page1.drawText(greeting, {
+        x: 20.6,
+        y: 176.2,
+        size: 3.3,
+        color: rgb(0, 0, 0),
+      })
+    }
+  } else if (isLitheAds) {
     let greeting = quotation?.greeting?.trim()
     if (!greeting) {
       const rawName =
@@ -151,13 +194,15 @@ export async function generateQuotationPdf(page2Element, company = 'naj', quotat
     }
   }
 
-  // Page 2: Custom customized page (HTML rendered to high-res image)
-  const page2 = finalDoc.addPage([A4_WIDTH, A4_HEIGHT])
+  // Page 2: Custom customized page (HTML rendered to high-res image matching native template dimensions)
+  const pWidth = page1.getWidth()
+  const pHeight = page1.getHeight()
+  const page2 = finalDoc.addPage([pWidth, pHeight])
   page2.drawImage(page2Image, {
     x: 0,
     y: 0,
-    width: A4_WIDTH,
-    height: A4_HEIGHT,
+    width: pWidth,
+    height: pHeight,
   })
 
   // Page 3: Directly copied from sourceDoc
@@ -244,11 +289,13 @@ export function openPdfInNewTab(pdfBytes) {
 
 export async function renderPdfPageAsImage(pageIndex, company = 'naj') {
   const templateUrl =
-    company === 'litheads'
-      ? litheAdsPdfUrl
-      : company === 'piktoria'
-        ? piktoriaPdfUrl
-        : sourcePdfUrl
+    company === 'fewdays'
+      ? fewdaysPdfUrl
+      : company === 'litheads'
+        ? litheAdsPdfUrl
+        : company === 'piktoria'
+          ? piktoriaPdfUrl
+          : sourcePdfUrl
   const sourceBytes = await fetch(templateUrl).then((r) => r.arrayBuffer())
   const sourceDoc = await PDFDocument.load(sourceBytes)
   const tempDoc = await PDFDocument.create()

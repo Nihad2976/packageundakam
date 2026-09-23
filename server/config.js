@@ -15,8 +15,9 @@ export const emailSettingsFile = path.join(dataDir, 'email_settings.json')
 export const najDataDir = path.join(dataDir, 'naj')
 export const piktoriaDataDir = path.join(dataDir, 'piktoria')
 export const litheAdsDataDir = path.join(dataDir, 'litheads')
+export const fewdaysDataDir = path.join(dataDir, 'fewdays')
 
-for (const dir of [dataDir, uploadsDir, najDataDir, piktoriaDataDir, litheAdsDataDir]) {
+for (const dir of [dataDir, uploadsDir, najDataDir, piktoriaDataDir, litheAdsDataDir, fewdaysDataDir]) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 }
 
@@ -26,12 +27,20 @@ export function getCompanyKey(company) {
   if (c === 'admin') return 'admin'
   if (c.includes('lithe')) return 'litheads'
   if (c.includes('piktoria')) return 'piktoria'
+  if (c.includes('fewday')) return 'fewdays'
   return 'naj'
 }
 
 export function getQuotationsFile(company) {
   const comp = getCompanyKey(company)
-  const compDir = comp === 'litheads' ? litheAdsDataDir : comp === 'piktoria' ? piktoriaDataDir : najDataDir
+  const compDir =
+    comp === 'litheads'
+      ? litheAdsDataDir
+      : comp === 'piktoria'
+        ? piktoriaDataDir
+        : comp === 'fewdays'
+          ? fewdaysDataDir
+          : najDataDir
   const file = path.join(compDir, 'quotations.json')
   if (!fs.existsSync(file)) {
     // If migrating legacy naj quotations
@@ -51,7 +60,14 @@ export function getQuotationsFile(company) {
 
 export function getInvoicesFile(company) {
   const comp = getCompanyKey(company)
-  const compDir = comp === 'litheads' ? litheAdsDataDir : comp === 'piktoria' ? piktoriaDataDir : najDataDir
+  const compDir =
+    comp === 'litheads'
+      ? litheAdsDataDir
+      : comp === 'piktoria'
+        ? piktoriaDataDir
+        : comp === 'fewdays'
+          ? fewdaysDataDir
+          : najDataDir
   const file = path.join(compDir, 'invoices.json')
   if (!fs.existsSync(file)) {
     if (comp === 'naj' && fs.existsSync(invoicesFile)) {
