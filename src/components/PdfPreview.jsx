@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import QuotationPage1 from './QuotationPage1'
 import QuotationPage2 from './QuotationPage2'
+import QuotationPage3 from './QuotationPage3'
 import { renderPdfPageAsImage } from '../utils/pdf'
 import { useAuth } from '../context/AuthContext'
 
@@ -8,35 +9,38 @@ export default function PdfPreview({ quotation, page2Ref }) {
   const { company: authCompany } = useAuth() || {}
   const company = quotation?.company || authCompany || 'naj'
   const isLitheAds = company === 'litheads'
+  const isFewdays = company === 'fewdays'
   const [page1Url, setPage1Url] = useState(null)
   const [page3Url, setPage3Url] = useState(null)
 
   useEffect(() => {
     let url1, url3
-    if (!isLitheAds) {
+    if (!isLitheAds && !isFewdays) {
       renderPdfPageAsImage(0, company).then((url) => {
         url1 = url
         setPage1Url(url)
       })
     }
-    renderPdfPageAsImage(2, company).then((url) => {
-      url3 = url
-      setPage3Url(url)
-    })
+    if (!isFewdays) {
+      renderPdfPageAsImage(2, company).then((url) => {
+        url3 = url
+        setPage3Url(url)
+      })
+    }
 
     return () => {
       if (url1) URL.revokeObjectURL(url1)
       if (url3) URL.revokeObjectURL(url3)
     }
-  }, [company, isLitheAds])
+  }, [company, isLitheAds, isFewdays])
 
   return (
     <div className="pdf-preview">
       <div className="pdf-preview-page">
         <span className="pdf-page-label">Page 1</span>
-        {isLitheAds ? (
+        {isLitheAds || isFewdays ? (
           <div className="pdf-page-2-wrapper">
-            <QuotationPage1 quotation={quotation} id="preview-page-1" />
+            <QuotationPage1 quotation={quotation} id="preview-page-1" company={company} />
           </div>
         ) : page1Url ? (
           <iframe title="Page 1" src={`${page1Url}#toolbar=0`} className="pdf-iframe" />
@@ -57,7 +61,11 @@ export default function PdfPreview({ quotation, page2Ref }) {
 
       <div className="pdf-preview-page">
         <span className="pdf-page-label">Page 3</span>
-        {page3Url ? (
+        {isFewdays ? (
+          <div className="pdf-page-2-wrapper">
+            <QuotationPage3 quotation={quotation} id="preview-page-3" company={company} />
+          </div>
+        ) : page3Url ? (
           <iframe title="Page 3" src={`${page3Url}#toolbar=0`} className="pdf-iframe" />
         ) : (
           <div className="pdf-loading">Loading page 3...</div>
