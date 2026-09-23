@@ -6,6 +6,8 @@ import piktoriaPdfUrl from '../assets/PIKTORIA.pdf?url'
 import litheAdsPdfUrl from '../assets/LitheAds.pdf?url'
 import fewdaysPdfUrl from '../assets/FEWDAYS.pdf?url'
 import quicksandFontUrl from '../assets/Quicksand-SemiBold.ttf?url'
+import fewdaysPage1CleanBgUrl from '../assets/fewdays_page1_clean_bg.png'
+import fewdaysPage3CleanBgUrl from '../assets/fewdays_page3_clean_bg.png'
 
 const A4_WIDTH = 595.28
 const A4_HEIGHT = 841.89
@@ -69,14 +71,74 @@ export async function generateQuotationPdf(page2Element, company = 'naj', quotat
 
   const isFewdays = company === 'fewdays'
   const isLitheAds = company === 'litheads'
+
+  if (isFewdays) {
+    const finalDoc = await PDFDocument.create()
+    finalDoc.registerFontkit(fontkit)
+
+    let quicksandFont = null
+    try {
+      const fontBytes = await fetch(quicksandFontUrl).then((r) => r.arrayBuffer())
+      quicksandFont = await finalDoc.embedFont(fontBytes)
+    } catch (err) {
+      console.warn('Custom font embedding failed, using fallback:', err)
+    }
+
+    // Page 1: Ultra-high-resolution canvas with embedded photo-quality floral arch
+    const p1Bytes = await fetch(fewdaysPage1CleanBgUrl).then((r) => r.arrayBuffer())
+    const p1Img = await finalDoc.embedPng(p1Bytes)
+    const page1 = finalDoc.addPage([A4_WIDTH, A4_HEIGHT])
+    page1.drawImage(p1Img, { x: 0, y: 0, width: A4_WIDTH, height: A4_HEIGHT })
+
+    let clientName = quotation?.clientName?.trim()
+    if (!clientName) {
+      clientName = quotation?.brideName?.trim() || quotation?.groomName?.trim() || 'Safwan'
+    }
+    const greeting = clientName.toLowerCase().startsWith('hello ')
+      ? (clientName.endsWith(',') ? clientName : `${clientName},`)
+      : `Hello ${clientName},`
+
+    page1.drawText(greeting, {
+      x: 77.9,
+      y: 637.7,
+      size: 10.5,
+      ...(quicksandFont ? { font: quicksandFont } : {}),
+      color: rgb(0, 0, 0),
+    })
+
+    // Page 2: Custom customized page (HTML rendered to high-res image matching native template dimensions)
+    const canvas = await html2canvas(page2Element, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#f0ece1',
+      windowWidth: 1190,
+      windowHeight: 1684,
+    })
+    const pngDataUrl = canvas.toDataURL('image/png', 1.0)
+    const pngBase64 = pngDataUrl.split(',')[1]
+    const pngBytes = Uint8Array.from(atob(pngBase64), (c) => c.charCodeAt(0))
+    const page2Image = await finalDoc.embedPng(pngBytes)
+    const page2 = finalDoc.addPage([A4_WIDTH, A4_HEIGHT])
+    page2.drawImage(page2Image, { x: 0, y: 0, width: A4_WIDTH, height: A4_HEIGHT })
+
+    // Page 3: Ultra-high-resolution canvas with embedded photo-quality floral arch
+    const p3Bytes = await fetch(fewdaysPage3CleanBgUrl).then((r) => r.arrayBuffer())
+    const p3Img = await finalDoc.embedPng(p3Bytes)
+    const page3 = finalDoc.addPage([A4_WIDTH, A4_HEIGHT])
+    page3.drawImage(p3Img, { x: 0, y: 0, width: A4_WIDTH, height: A4_HEIGHT })
+
+    const pdfBytes = await finalDoc.save()
+    return pdfBytes
+  }
+
   const templateUrl =
-    isFewdays
-      ? fewdaysPdfUrl
-      : isLitheAds
-        ? litheAdsPdfUrl
-        : company === 'piktoria'
-          ? piktoriaPdfUrl
-          : sourcePdfUrl
+    isLitheAds
+      ? litheAdsPdfUrl
+      : company === 'piktoria'
+        ? piktoriaPdfUrl
+        : sourcePdfUrl
   const sourceBytes = await fetch(templateUrl).then((r) => r.arrayBuffer())
   const sourceDoc = await PDFDocument.load(sourceBytes)
   const pages = sourceDoc.getPages()
@@ -86,7 +148,7 @@ export async function generateQuotationPdf(page2Element, company = 'naj', quotat
   }
 
   const canvas = await html2canvas(page2Element, {
-    scale: isFewdays ? 4 : 3,
+    scale: 3,
     useCORS: true,
     allowTaint: true,
     logging: false,
@@ -106,46 +168,7 @@ export async function generateQuotationPdf(page2Element, company = 'naj', quotat
   const [page1] = await finalDoc.copyPages(sourceDoc, [0])
   finalDoc.addPage(page1)
 
-  if (isFewdays) {
-    let clientName = quotation?.clientName?.trim()
-    if (!clientName) {
-      clientName = quotation?.brideName?.trim() || quotation?.groomName?.trim() || 'Safwan'
-    }
-
-    const greeting = clientName.toLowerCase().startsWith('hello ')
-      ? (clientName.endsWith(',') ? clientName : `${clientName},`)
-      : `Hello ${clientName},`
-
-    // Cover original 'Hello Safwan,' text with exact cream background rectangle
-    page1.drawRectangle({
-      x: 20,
-      y: 175,
-      width: 75,
-      height: 6,
-      color: rgb(0.9412, 0.9255, 0.8824),
-    })
-
-    try {
-      finalDoc.registerFontkit(fontkit)
-      const fontBytes = await fetch(quicksandFontUrl).then((r) => r.arrayBuffer())
-      const quicksandFont = await finalDoc.embedFont(fontBytes)
-      page1.drawText(greeting, {
-        x: 20.6,
-        y: 176.2,
-        size: 3.3,
-        font: quicksandFont,
-        color: rgb(0, 0, 0),
-      })
-    } catch (err) {
-      console.warn('Custom font embedding failed, using fallback:', err)
-      page1.drawText(greeting, {
-        x: 20.6,
-        y: 176.2,
-        size: 3.3,
-        color: rgb(0, 0, 0),
-      })
-    }
-  } else if (isLitheAds) {
+  if (isLitheAds) {
     let greeting = quotation?.greeting?.trim()
     if (!greeting) {
       const rawName =
