@@ -52,7 +52,7 @@ export default function PdfPreview({ quotation, page2Ref }) {
       <div className="pdf-preview-page">
         <span className="pdf-page-label">Page 2</span>
         <div className="pdf-page-2-wrapper">
-          <QuotationPage2 quotation={quotation} id={page2Ref?.current ? undefined : 'preview-page-2'} />
+          <QuotationPage2 quotation={quotation} id="preview-page-2" />
           <div ref={page2Ref} style={{ position: 'absolute', left: '-9999px', top: 0 }}>
             <QuotationPage2 quotation={quotation} id="pdf-render-page-2" />
           </div>

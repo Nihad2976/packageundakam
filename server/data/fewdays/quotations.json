@@ -204,182 +204,14 @@
     "pdfPath": "14d7f5f0-a34b-4f9c-a3c8-98251bf4144f_Fewdays_Stories_Quotation_Fidha.pdf"
   },
   {
-    "id": "097f88d1-fb15-4065-a889-3e28a2be7a31",
-    "userId": "fewdays-stories-default-user-id",
-    "clientName": "Najif",
-    "greeting": "Hello Najif,",
-    "clientType": "both",
-    "package": "with_album",
-    "packageTitle": "Standard Wedding Package",
-    "price": "50000",
-    "services": [
-      {
-        "id": "edited_photos",
-        "selected": true,
-        "quantity": 1,
-        "photoQuantity": "200+"
-      },
-      {
-        "id": "spot_edited_photos",
-        "selected": true,
-        "quantity": 1
-      },
-      {
-        "id": "fewdays_album",
-        "selected": true,
-        "quantity": 1,
-        "leafCount": 40
-      },
-      {
-        "id": "extra_leaves_10",
-        "selected": true,
-        "quantity": 1
-      },
-      {
-        "id": "mini_album",
-        "selected": false,
-        "quantity": 0
-      },
-      {
-        "id": "photo_calendar",
-        "selected": true,
-        "quantity": 1
-      },
-      {
-        "id": "photo_frame",
-        "selected": false,
-        "quantity": 0
-      },
-      {
-        "id": "couple_reel",
-        "selected": true,
-        "quantity": 1
-      },
-      {
-        "id": "function_reel",
-        "selected": true,
-        "quantity": 1
-      },
-      {
-        "id": "wedding_highlights",
-        "selected": true,
-        "quantity": 1
-      },
-      {
-        "id": "wedding_full_length",
-        "selected": false,
-        "quantity": 0
-      },
-      {
-        "id": "complimentary_post_wedding",
-        "selected": false,
-        "quantity": 0
-      },
-      {
-        "id": "drone_service",
-        "selected": false,
-        "quantity": 0
-      },
-      {
-        "id": "live_qr",
-        "selected": false,
-        "quantity": 0
-      },
-      {
-        "id": "soft_copy",
-        "selected": true,
-        "quantity": 1
-      }
-    ],
-    "coverages": [
-      {
-        "id": "b634927f-fe5d-4efb-a239-17f74c1e042d",
-        "type": "custom",
-        "customName": "Mehandi Night",
-        "date": "February 1",
-        "side": "both",
-        "roles": [
-          {
-            "id": "traditional_photographer",
-            "selected": true,
-            "quantity": 1
-          },
-          {
-            "id": "traditional_cinematographer",
-            "selected": true,
-            "quantity": 1
-          },
-          {
-            "id": "candid_photographer",
-            "selected": false,
-            "quantity": 0
-          },
-          {
-            "id": "candid_cinematographer",
-            "selected": false,
-            "quantity": 0
-          },
-          {
-            "id": "drone_pilot",
-            "selected": false,
-            "quantity": 0
-          }
-        ],
-        "month": "February",
-        "day": "1"
-      },
-      {
-        "id": "fa2d7a4b-8d23-456e-a496-c2ec4bb17cc3",
-        "type": "custom",
-        "customName": "Wedding Day",
-        "date": "February 2",
-        "side": "both",
-        "roles": [
-          {
-            "id": "traditional_photographer",
-            "selected": true,
-            "quantity": 1
-          },
-          {
-            "id": "traditional_cinematographer",
-            "selected": true,
-            "quantity": 1
-          },
-          {
-            "id": "candid_photographer",
-            "selected": false,
-            "quantity": 0
-          },
-          {
-            "id": "candid_cinematographer",
-            "selected": false,
-            "quantity": 0
-          },
-          {
-            "id": "drone_pilot",
-            "selected": false,
-            "quantity": 0
-          }
-        ],
-        "month": "February",
-        "day": "2"
-      }
-    ],
-    "completed": true,
-    "company": "fewdays",
-    "createdAt": "2026-09-23T06:58:35.336Z",
-    "updatedAt": "2026-09-23T06:58:35.336Z",
-    "pdfPath": null
-  },
-  {
     "id": "8947f900-627a-4a39-8c36-6ada04dfaf6a",
     "userId": "fewdays-stories-default-user-id",
-    "clientName": "Najif",
-    "greeting": "Hello Najif,",
+    "clientName": "Najif H",
+    "greeting": "Hello Najif H,",
     "clientType": "both",
-    "package": "with_album",
+    "package": "without_album",
     "packageTitle": "Standard Wedding Package",
-    "price": "50000",
+    "price": "51000",
     "services": [
       {
         "id": "edited_photos",
@@ -394,14 +226,14 @@
       },
       {
         "id": "fewdays_album",
-        "selected": true,
-        "quantity": 1,
+        "selected": false,
+        "quantity": 0,
         "leafCount": 40
       },
       {
         "id": "extra_leaves_10",
-        "selected": true,
-        "quantity": 1
+        "selected": false,
+        "quantity": 0
       },
       {
         "id": "mini_album",
@@ -410,8 +242,8 @@
       },
       {
         "id": "photo_calendar",
-        "selected": true,
-        "quantity": 1
+        "selected": false,
+        "quantity": 0
       },
       {
         "id": "photo_frame",
@@ -531,12 +363,52 @@
         ],
         "month": "February",
         "day": "2"
+      },
+      {
+        "id": "91c9d2d4-bcf8-4fd4-888b-aff4b3f8f4a9",
+        "type": "haldi",
+        "customName": "",
+        "date": "January 31",
+        "side": "groom",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "candid_photographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "drone_pilot",
+            "selected": false,
+            "quantity": 0
+          }
+        ],
+        "month": "January",
+        "day": "31"
       }
     ],
     "completed": true,
     "company": "fewdays",
     "createdAt": "2026-09-23T06:58:52.093Z",
-    "updatedAt": "2026-09-23T06:58:52.093Z",
-    "pdfPath": null
+    "updatedAt": "2026-09-23T07:17:57.816Z",
+    "pdfPath": null,
+    "groomName": "",
+    "brideName": "",
+    "events": [],
+    "deliverables": []
   }
 ]

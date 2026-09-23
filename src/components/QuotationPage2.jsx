@@ -164,17 +164,22 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
   }
 
   if (isFewdays) {
-    let events = quotation.events
-    if (!events && quotation.coverages && quotation.coverages.length > 0) {
-      events = quotation.coverages.map((cov) => {
-        const title = cov.customName?.trim() || getCoverageLabel(cov)
-        const dateStr = cov.date?.trim() || (cov.month && cov.day ? `${cov.month} ${cov.day}` : (cov.month || cov.day || ''))
-        const activeRoles = getActiveRoles(cov)
-        const roleLabel = (roleId) => FEWDAYS_TEAM_ROLES.find((r) => r.id === roleId)?.label || TEAM_ROLES.find((r) => r.id === roleId)?.label || roleId
-        const services = activeRoles.map((r) => `${r.quantity} ${roleLabel(r.id)}`)
-        return { name: title, date: dateStr, services }
-      })
+    let events = []
+    if (quotation.coverages && quotation.coverages.length > 0) {
+      events = quotation.coverages
+        .map((cov) => {
+          const title = cov.customName?.trim() || getCoverageLabel(cov)
+          const dateStr = cov.date?.trim() || (cov.month && cov.day ? `${cov.month} ${cov.day}` : (cov.month || cov.day || ''))
+          const activeRoles = getActiveRoles(cov)
+          const roleLabel = (roleId) => FEWDAYS_TEAM_ROLES.find((r) => r.id === roleId)?.label || TEAM_ROLES.find((r) => r.id === roleId)?.label || roleId
+          const services = activeRoles.map((r) => `${r.quantity} ${roleLabel(r.id)}`)
+          return { name: title, date: dateStr, services }
+        })
+        .filter((ev) => ev.services.length > 0 || ev.name)
+    } else if (Array.isArray(quotation.events) && quotation.events.length > 0) {
+      events = quotation.events
     }
+
     if (!events || events.length === 0) {
       events = [
         {
@@ -188,8 +193,8 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
       ]
     }
 
-    let deliverables = quotation.deliverables
-    if (!deliverables && quotation.services && quotation.services.length > 0) {
+    let deliverables = []
+    if (quotation.services && quotation.services.length > 0) {
       deliverables = quotation.services
         .filter((s) => s.selected)
         .map((s) => {
@@ -204,25 +209,8 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
           }
           return serviceDef.name
         })
-    }
-    if (!deliverables || deliverables.length === 0) {
-      deliverables = [
-        'Edited Photos',
-        'Spot Edited Photos (For Story/Status)',
-        'Couple Reel',
-        'Function Reel',
-        'Complimentary Post-Wedding Shoot (Photo & Video)',
-        '40 Leaf Premium Luster Laminated Album',
-        '10 Extra Leaves (Complimentary)',
-        '10 Leaf Mini Album',
-        'Photo Calendar',
-        'Photo Frame',
-        'Wedding Highlights (3 to 7 min)',
-        'Wedding Full Length Video (10+ min)',
-        'Drone Service',
-        'Live QR Photo Service',
-        'Soft Copy (Provided via Pendrive)',
-      ]
+    } else if (Array.isArray(quotation.deliverables) && quotation.deliverables.length > 0) {
+      deliverables = quotation.deliverables
     }
 
     const rawPrice = quotation.price ?? 119000
