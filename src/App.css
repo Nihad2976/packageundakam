@@ -3300,14 +3300,50 @@ body {
    FEWDAYS STORIES DEDICATED STYLES
    ========================================================================== */
 
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/Quicksand-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./assets/Quicksand-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./assets/Quicksand-SemiBold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/Quicksand-Bold.ttf') format('truetype');
+}
+
 /* FEWDAYS Page 2 PDF Render Layout */
+.pdf-template-page2.fewdays-theme,
+.pdf-template-page2.fewdays-theme * {
+  font-family: 'Quicksand', sans-serif !important;
+}
+
 .pdf-template-page2.fewdays-theme {
   width: 595px;
   height: 842px;
   min-height: 842px;
   max-height: 842px;
   background: #f0ece1;
-  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #1a1a1a;
   position: relative;
   box-sizing: border-box;

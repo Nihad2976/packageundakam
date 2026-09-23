@@ -85,7 +85,7 @@ export async function generateQuotationPdf(page2Element, company = 'naj', quotat
   }
 
   const canvas = await html2canvas(page2Element, {
-    scale: 3,
+    scale: isFewdays ? 4 : 3,
     useCORS: true,
     allowTaint: true,
     logging: false,
