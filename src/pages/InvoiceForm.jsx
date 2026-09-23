@@ -36,6 +36,20 @@ export default function InvoiceForm() {
   const [advance, setAdvance] = useState(isFewdays ? 1000 : isPiktoria ? 2000 : 10000)
   const [loading, setLoading] = useState(!isNew)
   const [generating, setGenerating] = useState(false)
+  const [previewMode, setPreviewMode] = useState(false)
+  const [previewScale, setPreviewScale] = useState(0.62)
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth
+      if (w < 640) setPreviewScale(Math.max(0.28, (w - 48) / 1190))
+      else if (w < 1100) setPreviewScale(Math.max(0.45, (w - 200) / 1190))
+      else setPreviewScale(0.62)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (!isNew && id) {
@@ -129,7 +143,7 @@ export default function InvoiceForm() {
       await api.saveInvoicePdf(currentId, base64, fileName)
 
       navigate(`/invoice/${currentId}/download`, {
-        state: { pdfBytes, fileName },
+        state: { pdfBytes, fileName, invoice: payload },
       })
     } catch (err) {
       console.error(err)
@@ -182,25 +196,118 @@ export default function InvoiceForm() {
         </header>
 
         {/* Page Content */}
-        <div style={{ maxWidth: '840px' }}>
+        <div style={{ maxWidth: previewMode ? '1000px' : '840px', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
             <div>
-              <h1 className="dashboard-page-title">{isNew ? 'Create New Invoice' : 'Edit Invoice'}</h1>
-              <p className="dashboard-page-subtitle">Fill in customer details and invoice items</p>
+              <h1 className="dashboard-page-title">
+                {previewMode ? 'Invoice Preview' : isNew ? 'Create New Invoice' : 'Edit Invoice'}
+              </h1>
+              <p className="dashboard-page-subtitle">
+                {previewMode
+                  ? `Review invoice for ${customerName} before downloading`
+                  : 'Fill in customer details and invoice items'}
+              </p>
             </div>
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => navigate('/')}
+              onClick={() => {
+                if (previewMode) setPreviewMode(false)
+                else navigate('/')
+              }}
               style={{ fontSize: '13px', padding: '8px 16px' }}
             >
-              ← Back to Dashboard
+              {previewMode ? '← Back to Form' : '← Back to Dashboard'}
             </button>
           </div>
 
           {loading ? (
             <div className="form-container" style={{ background: '#fff', borderRadius: '12px', padding: '40px', border: '1px solid #efebe4', textAlign: 'center' }}>
               <p>Loading invoice details...</p>
+            </div>
+          ) : previewMode ? (
+            <div className="invoice-preview-step-container">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
+                <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+                  A4 High-Resolution Preview • Ready for export
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setPreviewMode(false)}
+                    style={{ padding: '9px 18px', fontSize: '13.5px', fontWeight: '600' }}
+                  >
+                    ← Edit Details
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    style={{ background: '#27ae60', borderColor: '#27ae60', padding: '9px 20px', fontSize: '13.5px', fontWeight: '700' }}
+                    onClick={handleGenerateInvoice}
+                    disabled={generating}
+                  >
+                    {generating ? 'Generating PDF...' : 'Download Invoice PDF'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Centered Preview Canvas */}
+              <div
+                className="invoice-preview-scroll-wrapper"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'flex-start',
+                  padding: '30px 16px',
+                  background: '#eae7e1',
+                  borderRadius: '12px',
+                  overflow: 'auto',
+                  border: '1px solid #ded9ce',
+                }}
+              >
+                <div
+                  style={{
+                    width: `${1190 * previewScale}px`,
+                    height: `${1684 * previewScale}px`,
+                    boxShadow: '0 15px 45px rgba(0, 0, 0, 0.18)',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    background: isFewdays ? '#f0ece1' : isPiktoria ? '#f7f6f0' : '#1e1e1e',
+                    position: 'relative',
+                    flexShrink: 0,
+                  }}
+                >
+                  <InvoicePreview
+                    invoice={invoiceData}
+                    company={company}
+                    scale={previewScale}
+                    id="invoice-visible-preview"
+                  />
+                </div>
+              </div>
+
+              {/* Bottom Actions */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setPreviewMode(false)}
+                  style={{ padding: '12px 24px', fontSize: '14px' }}
+                >
+                  ← Back to Edit
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-large"
+                  style={{ background: '#27ae60', color: '#ffffff', border: 'none', padding: '14px 32px', fontSize: '15px', fontWeight: '700', borderRadius: '8px' }}
+                  onClick={handleGenerateInvoice}
+                  disabled={generating}
+                >
+                  {generating ? 'Generating Invoice PDF...' : 'Download Invoice PDF →'}
+                </button>
+              </div>
             </div>
           ) : (
             <div className="form-container invoice-form-card">
@@ -343,7 +450,7 @@ export default function InvoiceForm() {
                 </section>
 
                 {/* Actions */}
-                <div className="form-actions" style={{ marginTop: '32px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <div className="form-actions" style={{ marginTop: '32px', display: 'flex', justifyContent: 'flex-end', gap: '12px', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     className="btn btn-secondary"
@@ -353,12 +460,26 @@ export default function InvoiceForm() {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-large"
-                    style={{ background: '#27ae60', color: '#ffffff', border: 'none', padding: '14px 28px', fontSize: '15px', fontWeight: '700', borderRadius: '8px' }}
+                    className="btn btn-primary"
+                    style={{ padding: '14px 28px', fontSize: '15px', fontWeight: '700', borderRadius: '8px' }}
+                    onClick={() => {
+                      if (!customerName.trim()) {
+                        alert('Please enter Customer Name (Invoice To).')
+                        return
+                      }
+                      setPreviewMode(true)
+                    }}
+                  >
+                    👁️ Preview Invoice
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ padding: '14px 20px', fontSize: '14px', borderRadius: '8px' }}
                     onClick={handleGenerateInvoice}
                     disabled={generating}
                   >
-                    {generating ? 'Generating Invoice PDF...' : 'Generate Invoice PDF'}
+                    {generating ? 'Generating...' : 'Direct Download'}
                   </button>
                 </div>
               </div>

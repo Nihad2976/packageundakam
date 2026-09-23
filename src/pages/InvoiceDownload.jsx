@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../utils/api'
+import InvoicePreview from '../components/InvoicePreview'
 
 export default function InvoiceDownload() {
   const { id } = useParams()
@@ -8,8 +9,28 @@ export default function InvoiceDownload() {
   const location = useLocation()
 
   const [pdfBlob, setPdfBlob] = useState(location.state?.pdfBytes || null)
+  const [invoice, setInvoice] = useState(location.state?.invoice || null)
   const fileName = location.state?.fileName || 'Invoice.pdf'
   const [loading, setLoading] = useState(!location.state?.pdfBytes && !!id)
+  const [previewScale, setPreviewScale] = useState(0.48)
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth
+      if (w < 640) setPreviewScale(Math.max(0.28, (w - 48) / 1190))
+      else if (w < 1100) setPreviewScale(Math.max(0.38, (w - 120) / 1190))
+      else setPreviewScale(0.48)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    if (!invoice && id) {
+      api.getInvoice(id).then(setInvoice).catch(console.error)
+    }
+  }, [id, invoice])
 
   useEffect(() => {
     if (!pdfBlob && id) {
@@ -59,8 +80,35 @@ export default function InvoiceDownload() {
   const pdfUrl = id ? api.getInvoiceDownloadUrl(id) : '#'
 
   return (
-    <div className="download-page">
-      <div className="download-card">
+    <div className="download-page invoice-download-page" style={{ padding: '40px 20px', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
+      {invoice && (
+        <div className="invoice-download-preview-side" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ marginBottom: '12px', fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', color: '#666' }}>
+            Invoice Document Preview
+          </div>
+          <div
+            style={{
+              width: `${1190 * previewScale}px`,
+              height: `${1684 * previewScale}px`,
+              boxShadow: '0 15px 45px rgba(0, 0, 0, 0.16)',
+              borderRadius: '6px',
+              overflow: 'hidden',
+              background: invoice.company === 'fewdays' ? '#f0ece1' : invoice.company === 'piktoria' ? '#f7f6f0' : '#1e1e1e',
+              position: 'relative',
+              flexShrink: 0,
+            }}
+          >
+            <InvoicePreview
+              invoice={invoice}
+              company={invoice.company}
+              scale={previewScale}
+              id="download-invoice-preview"
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="download-card" style={{ maxWidth: '440px', width: '100%' }}>
         <p className="download-success">✓ Invoice PDF Ready for Download</p>
         <p style={{ fontSize: '13px', color: '#666', marginBottom: '16px', fontWeight: '500' }}>
           File: <code>{fileName}</code>
@@ -107,3 +155,4 @@ export default function InvoiceDownload() {
     </div>
   )
 }
+
