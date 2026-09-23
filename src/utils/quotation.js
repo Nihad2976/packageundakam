@@ -5,6 +5,7 @@ import {
   SERVICES,
   PIKTORIA_SERVICES,
   LITHE_ADS_SERVICES,
+  FEWDAYS_SERVICES,
   getServicesForCompany,
   getPackagePresetsForCompany,
   DEFAULT_PHOTO_QUANTITY,
@@ -201,14 +202,14 @@ export function formatLithePackageHeading(coverages) {
 export const formatLithePackageTitle = formatLithePackageHeading
 
 export function createServiceSelection(serviceId, quantity = 1, company = 'naj') {
-  const allServices = [...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES]
+  const allServices = [...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES, ...FEWDAYS_SERVICES]
   const service = allServices.find((s) => s.id === serviceId)
   return {
     id: serviceId,
     selected: true,
     quantity,
     photoQuantity: service?.hasPhotoQuantity ? (company === 'piktoria' ? '100+' : DEFAULT_PHOTO_QUANTITY) : undefined,
-    leafCount: service?.hasLeafCount ? (company === 'piktoria' || company === 'litheads' ? 40 : 30) : undefined,
+    leafCount: service?.hasLeafCount ? (company === 'piktoria' || company === 'litheads' || company === 'fewdays' ? 40 : 30) : undefined,
   }
 }
 
@@ -223,7 +224,7 @@ export function buildPresetServices(packageType, company = 'naj') {
       selected: isSelected,
       quantity: isSelected ? 1 : 0,
       photoQuantity: service.hasPhotoQuantity ? (company === 'piktoria' ? '100+' : DEFAULT_PHOTO_QUANTITY) : undefined,
-      leafCount: service.hasLeafCount ? (company === 'piktoria' ? 40 : 30) : undefined,
+      leafCount: service.hasLeafCount ? (company === 'piktoria' || company === 'fewdays' ? 40 : 30) : undefined,
     }
   })
 }
