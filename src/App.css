@@ -2615,6 +2615,188 @@ body {
 }
 
 /* ==========================================================================
+   FEWDAYS STORIES INVOICE TEMPLATE
+   ========================================================================== */
+.invoice-pdf-template.fewdays-invoice {
+  width: 1190px;
+  height: 1684px;
+  min-height: 1684px;
+  max-height: 1684px;
+  background-color: #f0ece1;
+  color: #97342c;
+  font-family: 'Quicksand', sans-serif !important;
+  padding: 0;
+  margin: 0;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.fewdays-inv-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1190px;
+  height: 1684px;
+  object-fit: fill;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.fewdays-inv-content {
+  position: relative;
+  z-index: 2;
+  padding-top: 514px;
+  padding-left: 162px;
+  padding-right: 162px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.fewdays-inv-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 74px;
+}
+
+.fewdays-inv-left-head {
+  display: flex;
+  flex-direction: column;
+}
+
+.fewdays-inv-title {
+  font-family: 'Quicksand', sans-serif !important;
+  font-size: 71px;
+  font-weight: 700;
+  color: #97342c;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin: 0 0 32px 0;
+}
+
+.fewdays-inv-date {
+  font-family: 'Quicksand', sans-serif !important;
+  font-size: 24px;
+  font-weight: 500;
+  color: #97342c;
+  letter-spacing: 0.5px;
+}
+
+.fewdays-inv-right-head {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 2px;
+}
+
+.fewdays-inv-to {
+  font-family: 'Quicksand', sans-serif !important;
+  font-size: 24px;
+  color: #97342c;
+  letter-spacing: 0.5px;
+}
+
+.fewdays-inv-to-label {
+  font-weight: 500;
+}
+
+.fewdays-inv-to-name {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.fewdays-inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-bottom: 30px;
+}
+
+.fewdays-inv-table th {
+  font-family: 'Quicksand', sans-serif !important;
+  font-size: 26px;
+  font-weight: 700;
+  color: #97342c;
+  padding: 0 0 20px 0;
+  border: none;
+}
+
+.fewdays-inv-table th.col-desc {
+  width: 39%;
+  text-align: left;
+}
+
+.fewdays-inv-table th.col-price {
+  width: 28%;
+  text-align: left;
+}
+
+.fewdays-inv-table th.col-qty {
+  width: 17%;
+  text-align: left;
+}
+
+.fewdays-inv-table th.col-amount {
+  width: 16%;
+  text-align: right;
+}
+
+.fewdays-inv-table td {
+  font-family: 'Quicksand', sans-serif !important;
+  font-size: 21px;
+  font-weight: 500;
+  color: #97342c;
+  padding: 18px 0 0 0;
+  border: none;
+  vertical-align: top;
+}
+
+.fewdays-inv-table td.col-desc {
+  text-align: left;
+}
+
+.fewdays-inv-table td.col-price {
+  text-align: left;
+}
+
+.fewdays-inv-table td.col-qty {
+  text-align: left;
+}
+
+.fewdays-inv-table td.col-amount {
+  text-align: right;
+}
+
+.fewdays-inv-totals-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 36px;
+}
+
+.fewdays-inv-totals-box {
+  width: 33%;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.fewdays-inv-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Quicksand', sans-serif !important;
+  font-size: 21px;
+  font-weight: 500;
+  color: #97342c;
+}
+
+.fewdays-inv-final-total {
+  font-weight: 700;
+}
+
+
+/* ==========================================================================
    LITHE ADS QUOTATION PAGES
    ========================================================================== */
 .pdf-template-page1.litheads-theme {

@@ -16,7 +16,8 @@ export async function generateInvoicePdf(invoiceElement, company = 'naj') {
   }
 
   const isPiktoria = company === 'piktoria'
-  const bgColor = isPiktoria ? '#f7f6f0' : '#1e1e1e'
+  const isFewdays = company === 'fewdays'
+  const bgColor = isFewdays ? '#f0ece1' : isPiktoria ? '#f7f6f0' : '#1e1e1e'
 
   const canvas = await html2canvas(invoiceElement, {
     scale: 4,

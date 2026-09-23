@@ -1,33 +1,136 @@
 import React from 'react'
 import { useAuth } from '../context/AuthContext'
+import fewdaysInvoiceBg from '../assets/fewdays_invoice_clean_bg.png'
 
 export function formatCurrency(num) {
   const n = Number(num) || 0
   return n.toLocaleString('en-IN')
 }
 
+export function formatInvoiceDate(d) {
+  if (!d) {
+    const today = new Date()
+    const dd = String(today.getDate()).padStart(2, '0')
+    const mm = String(today.getMonth() + 1).padStart(2, '0')
+    const yy = String(today.getFullYear()).slice(-2)
+    return `${dd}/${mm}/${yy}`
+  }
+  if (typeof d === 'string' && d.includes('-')) {
+    const parts = d.split('-')
+    if (parts.length === 3) {
+      const yy = parts[0].length === 4 ? parts[0].slice(-2) : parts[0]
+      return `${parts[2]}/${parts[1]}/${yy}`
+    }
+  }
+  return d
+}
+
 export default function InvoicePreview({ invoice, scale = 1, id = 'invoice-render-page', company: forcedCompany }) {
   const { company: authCompany } = useAuth() || {}
   const company = forcedCompany || invoice?.company || authCompany || 'naj'
   const isPiktoria = company === 'piktoria'
+  const isFewdays = company === 'fewdays'
 
-  const customerName = invoice?.customerName?.trim() || (isPiktoria ? 'HIBA' : 'Sanoof')
+  const customerName = invoice?.customerName?.trim() || (isFewdays ? 'FATHIMA' : isPiktoria ? 'HIBA' : 'Sanoof')
   const items = invoice?.items && invoice.items.length > 0
     ? invoice.items
-    : isPiktoria
+    : isFewdays
       ? [
-          { name: 'Package', quantity: 1, price: 40000, total: 40000 },
-          { name: 'Travel', quantity: 1, price: 0, total: 0 },
+          { name: 'Package', quantity: 1, price: 30000, total: 30000 },
+          { name: 'Travel', quantity: 1, price: 1500, total: 1500 },
         ]
-      : [
-          { name: 'Package', quantity: 1, price: 20000, total: 20000 },
-          { name: 'Save the Date', quantity: 1, price: 4000, total: 4000 },
-          { name: 'Travel', quantity: 1, price: 1000, total: 1000 },
-        ]
+      : isPiktoria
+        ? [
+            { name: 'Package', quantity: 1, price: 40000, total: 40000 },
+            { name: 'Travel', quantity: 1, price: 0, total: 0 },
+          ]
+        : [
+            { name: 'Package', quantity: 1, price: 20000, total: 20000 },
+            { name: 'Save the Date', quantity: 1, price: 4000, total: 4000 },
+            { name: 'Travel', quantity: 1, price: 1000, total: 1000 },
+          ]
 
   const subTotal = items.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.price || 0)), 0)
-  const advance = Number(invoice?.advance) || (isPiktoria ? 2000 : 0)
+  const advance = Number(invoice?.advance) || (isFewdays ? 1000 : isPiktoria ? 2000 : 0)
   const balance = subTotal - advance
+
+  if (isFewdays) {
+    return (
+      <div
+        id={id}
+        className="invoice-pdf-template fewdays-invoice"
+        style={{
+          transform: scale !== 1 ? `scale(${scale})` : undefined,
+          transformOrigin: 'top left',
+        }}
+      >
+        <img
+          src={fewdaysInvoiceBg}
+          alt=""
+          className="fewdays-inv-bg"
+          aria-hidden="true"
+        />
+
+        <div className="fewdays-inv-content">
+          <div className="fewdays-inv-head-row">
+            <div className="fewdays-inv-left-head">
+              <h1 className="fewdays-inv-title">INVOICE</h1>
+              <div className="fewdays-inv-date">Date: {formatInvoiceDate(invoice?.date)}</div>
+            </div>
+            <div className="fewdays-inv-right-head">
+              <div className="fewdays-inv-to">
+                <span className="fewdays-inv-to-label">TO : </span>
+                <span className="fewdays-inv-to-name">{customerName}</span>
+              </div>
+            </div>
+          </div>
+
+          <table className="fewdays-inv-table">
+            <thead>
+              <tr>
+                <th className="col-desc">Description</th>
+                <th className="col-price">Price</th>
+                <th className="col-qty">Qty</th>
+                <th className="col-amount">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, index) => {
+                const qty = Number(item.quantity) || 1
+                const price = Number(item.price) || 0
+                const itemTotal = qty * price
+                return (
+                  <tr key={index}>
+                    <td className="col-desc">{item.name || 'Item'}</td>
+                    <td className="col-price">{price > 0 ? price : 0}</td>
+                    <td className="col-qty">{qty}</td>
+                    <td className="col-amount">{itemTotal > 0 ? itemTotal : 0}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+
+          <div className="fewdays-inv-totals-wrap">
+            <div className="fewdays-inv-totals-box">
+              <div className="fewdays-inv-total-row">
+                <span className="fewdays-inv-total-label">SubTotal</span>
+                <span className="fewdays-inv-total-val">{subTotal}</span>
+              </div>
+              <div className="fewdays-inv-total-row">
+                <span className="fewdays-inv-total-label">Advance</span>
+                <span className="fewdays-inv-total-val">{advance > 0 ? advance : 0}</span>
+              </div>
+              <div className="fewdays-inv-total-row fewdays-inv-final-total">
+                <span className="fewdays-inv-total-label">Total</span>
+                <span className="fewdays-inv-total-val">{balance}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (isPiktoria) {
     return (

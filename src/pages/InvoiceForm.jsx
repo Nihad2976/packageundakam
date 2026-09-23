@@ -12,20 +12,28 @@ export default function InvoiceForm() {
   const navigate = useNavigate()
   const isNew = !id || id === 'new'
 
+  const isFewdays = company === 'fewdays'
+  const isPiktoria = company === 'piktoria'
+
   const [invoiceId, setInvoiceId] = useState(isNew ? null : id)
-  const [customerName, setCustomerName] = useState(company === 'piktoria' ? 'HIBA' : 'Sanoof')
+  const [customerName, setCustomerName] = useState(isFewdays ? 'FATHIMA' : isPiktoria ? 'HIBA' : 'Sanoof')
   const [items, setItems] = useState(
-    company === 'piktoria'
+    isFewdays
       ? [
-          { name: 'Package', quantity: 1, price: 40000 },
-          { name: 'Travel', quantity: 1, price: 0 },
+          { name: 'Package', quantity: 1, price: 30000 },
+          { name: 'Travel', quantity: 1, price: 1500 },
         ]
-      : [
-          { name: 'Package', quantity: 1, price: 20000 },
-          { name: 'Travel', quantity: 1, price: 1000 },
-        ]
+      : isPiktoria
+        ? [
+            { name: 'Package', quantity: 1, price: 40000 },
+            { name: 'Travel', quantity: 1, price: 0 },
+          ]
+        : [
+            { name: 'Package', quantity: 1, price: 20000 },
+            { name: 'Travel', quantity: 1, price: 1000 },
+          ]
   )
-  const [advance, setAdvance] = useState(company === 'piktoria' ? 2000 : 10000)
+  const [advance, setAdvance] = useState(isFewdays ? 1000 : isPiktoria ? 2000 : 10000)
   const [loading, setLoading] = useState(!isNew)
   const [generating, setGenerating] = useState(false)
 
@@ -113,7 +121,9 @@ export default function InvoiceForm() {
       if (!element) throw new Error('Invoice preview element not found')
 
       const pdfBytes = await generateInvoicePdf(element, company)
-      const fileName = `${customerName.trim().replace(/\s+/g, '_')}_Invoice.pdf`
+      const fileName = isFewdays
+        ? `Fewdays_Stories_Invoice_${customerName.trim().replace(/\s+/g, '_')}.pdf`
+        : `${customerName.trim().replace(/\s+/g, '_')}_Invoice.pdf`
       const base64 = pdfBytesToBase64(pdfBytes)
 
       await api.saveInvoicePdf(currentId, base64, fileName)
