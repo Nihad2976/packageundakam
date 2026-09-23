@@ -19,7 +19,7 @@ function writeInvoices(company = 'naj', data = []) {
 }
 
 function findInvoiceAcrossCompanies(id) {
-  for (const comp of ['naj', 'piktoria', 'litheads']) {
+  for (const comp of ['naj', 'piktoria', 'litheads', 'fewdays']) {
     const list = readInvoices(comp)
     const found = list.find((i) => i.id === id)
     if (found) return { invoice: found, company: comp }

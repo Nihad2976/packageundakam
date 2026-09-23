@@ -235,7 +235,7 @@ router.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10)
     const now = new Date().toISOString()
     const lowerName = cleanName.toLowerCase()
-    const company = lowerName.includes('piktoria') ? 'piktoria' : lowerName.includes('lithe') ? 'litheads' : 'naj'
+    const company = lowerName.includes('fewday') ? 'fewdays' : lowerName.includes('piktoria') ? 'piktoria' : lowerName.includes('lithe') ? 'litheads' : 'naj'
     const newUser = {
       id: uuidv4(),
       name: cleanName,
