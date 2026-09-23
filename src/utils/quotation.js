@@ -50,6 +50,10 @@ export function getDisplayName(quotation) {
 }
 
 export function getPdfFileName(quotation) {
+  if (quotation?.company === 'fewdays') {
+    const name = (quotation?.clientName || quotation?.groomName || quotation?.brideName || 'Client').trim().replace(/\s+/g, '_')
+    return `Fewdays_Stories_Quotation_${name}.pdf`
+  }
   if (quotation?.clientName?.trim()) {
     return `${quotation.clientName.trim().replace(/\s+/g, '_')}_Package.pdf`
   }
@@ -243,6 +247,22 @@ export function generateUUID() {
 
 export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName = '', side = null, date = '', company = 'naj') {
   const actualSide = side || getDefaultSide(type)
+  if (company === 'fewdays') {
+    return {
+      id: generateUUID(),
+      type,
+      customName,
+      date,
+      side: actualSide,
+      roles: [
+        { id: 'traditional_photographer', selected: true, quantity: 1 },
+        { id: 'traditional_cinematographer', selected: true, quantity: 1 },
+        { id: 'candid_photographer', selected: false, quantity: 0 },
+        { id: 'candid_cinematographer', selected: false, quantity: 0 },
+        { id: 'drone_pilot', selected: false, quantity: 0 },
+      ],
+    }
+  }
   if (company === 'litheads') {
     const { month, day } = parseMonthAndDay(date)
     return {
@@ -277,39 +297,45 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
 export function createEmptyQuotation(company = 'naj') {
   if (company === 'fewdays') {
     return {
+      clientName: '',
+      greeting: 'Hello Safwan,',
+      clientType: CLIENT_TYPES.BOTH,
+      package: PACKAGES.WITH_ALBUM,
+      packageTitle: 'Standard Wedding Package',
+      price: '1,19,000',
+      services: buildPresetServices(PACKAGES.WITH_ALBUM, 'fewdays'),
+      coverages: [
+        {
+          id: generateUUID(),
+          type: COVERAGE_TYPES.CUSTOM,
+          customName: 'Mehandi Night',
+          date: '',
+          side: COVERAGE_SIDES.BOTH,
+          roles: [
+            { id: 'traditional_photographer', selected: true, quantity: 1 },
+            { id: 'traditional_cinematographer', selected: true, quantity: 1 },
+            { id: 'candid_photographer', selected: false, quantity: 0 },
+            { id: 'candid_cinematographer', selected: false, quantity: 0 },
+            { id: 'drone_pilot', selected: false, quantity: 0 },
+          ],
+        },
+        {
+          id: generateUUID(),
+          type: COVERAGE_TYPES.CUSTOM,
+          customName: 'Wedding Day',
+          date: '',
+          side: COVERAGE_SIDES.BOTH,
+          roles: [
+            { id: 'traditional_photographer', selected: true, quantity: 1 },
+            { id: 'traditional_cinematographer', selected: true, quantity: 1 },
+            { id: 'candid_photographer', selected: false, quantity: 0 },
+            { id: 'candid_cinematographer', selected: false, quantity: 0 },
+            { id: 'drone_pilot', selected: false, quantity: 0 },
+          ],
+        },
+      ],
+      completed: false,
       company: 'fewdays',
-      clientName: 'Safwan',
-      events: [
-        {
-          id: '1',
-          name: 'Mehandi Night',
-          services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
-        },
-        {
-          id: '2',
-          name: 'Wedding Day',
-          services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
-        },
-      ],
-      deliverables: [
-        'Edited Photos',
-        'Spot Edited Photos (For Story/Status)',
-        'Couple Reel',
-        'Function Reel',
-        'Complimentary Post-Wedding Shoot (Photo & Video)',
-        '40 Leaf Premium Luster Laminated Album',
-        '10 Extra Leaves (Complimentary)',
-        '10 Leaf Mini Album',
-        'Photo Calendar',
-        'Photo Frame',
-        'Wedding Highlights (3 to 7 min)',
-        'Wedding Full Length Video (10+ min)',
-        'Drone Service',
-        'Live QR Photo Service',
-        'Soft Copy (Provided via Pendrive)',
-      ],
-      price: 119000,
-      completed: true,
     }
   }
 

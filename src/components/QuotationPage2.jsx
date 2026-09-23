@@ -9,7 +9,7 @@ import {
   getActiveRoles,
   groupCoveragesBySide,
 } from '../utils/quotation'
-import { PAYMENT_TERMS, TEAM_ROLES, SERVICES, PIKTORIA_SERVICES, LITHE_ADS_SERVICES } from '../constants/quotation'
+import { PAYMENT_TERMS, TEAM_ROLES, SERVICES, PIKTORIA_SERVICES, LITHE_ADS_SERVICES, FEWDAYS_SERVICES, FEWDAYS_TEAM_ROLES } from '../constants/quotation'
 import { useAuth } from '../context/AuthContext'
 import piktoriaPage2Bg from '../assets/piktoria_page2_clean_bg.png'
 import fewdaysPage2Bg from '../assets/fewdays_page2_clean_bg.png'
@@ -164,37 +164,69 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
   }
 
   if (isFewdays) {
-    const events = quotation.events || [
-      {
-        name: 'Mehandi Night',
-        services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
-      },
-      {
-        name: 'Wedding Day',
-        services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
-      },
-    ]
+    let events = quotation.events
+    if (!events && quotation.coverages && quotation.coverages.length > 0) {
+      events = quotation.coverages.map((cov) => {
+        const title = cov.customName?.trim() || getCoverageLabel(cov)
+        const activeRoles = getActiveRoles(cov)
+        const roleLabel = (roleId) => FEWDAYS_TEAM_ROLES.find((r) => r.id === roleId)?.label || TEAM_ROLES.find((r) => r.id === roleId)?.label || roleId
+        const services = activeRoles.map((r) => `${r.quantity} ${roleLabel(r.id)}`)
+        return { name: title, services }
+      })
+    }
+    if (!events || events.length === 0) {
+      events = [
+        {
+          name: 'Mehandi Night',
+          services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
+        },
+        {
+          name: 'Wedding Day',
+          services: ['1 Traditional Photographer', '1 Traditional Cinematographer'],
+        },
+      ]
+    }
 
-    const deliverables = quotation.deliverables || [
-      'Edited Photos',
-      'Spot Edited Photos (For Story/Status)',
-      'Couple Reel',
-      'Function Reel',
-      'Complimentary Post-Wedding Shoot (Photo & Video)',
-      '40 Leaf Premium Luster Laminated Album',
-      '10 Extra Leaves (Complimentary)',
-      '10 Leaf Mini Album',
-      'Photo Calendar',
-      'Photo Frame',
-      'Wedding Highlights (3 to 7 min)',
-      'Wedding Full Length Video (10+ min)',
-      'Drone Service',
-      'Live QR Photo Service',
-      'Soft Copy (Provided via Pendrive)',
-    ]
+    let deliverables = quotation.deliverables
+    if (!deliverables && quotation.services && quotation.services.length > 0) {
+      deliverables = quotation.services
+        .filter((s) => s.selected)
+        .map((s) => {
+          const serviceDef = FEWDAYS_SERVICES.find((def) => def.id === s.id) || SERVICES.find((def) => def.id === s.id)
+          if (!serviceDef) return s.customTitle || s.name || s.id
+          if (serviceDef.hasLeafCount) {
+            const leaves = s.leafCount || 40
+            return `${leaves} Leaf Premium Luster Laminated Album`
+          }
+          if (serviceDef.hasPhotoQuantity && s.photoQuantity) {
+            return `${s.photoQuantity} ${serviceDef.name}`
+          }
+          return serviceDef.name
+        })
+    }
+    if (!deliverables || deliverables.length === 0) {
+      deliverables = [
+        'Edited Photos',
+        'Spot Edited Photos (For Story/Status)',
+        'Couple Reel',
+        'Function Reel',
+        'Complimentary Post-Wedding Shoot (Photo & Video)',
+        '40 Leaf Premium Luster Laminated Album',
+        '10 Extra Leaves (Complimentary)',
+        '10 Leaf Mini Album',
+        'Photo Calendar',
+        'Photo Frame',
+        'Wedding Highlights (3 to 7 min)',
+        'Wedding Full Length Video (10+ min)',
+        'Drone Service',
+        'Live QR Photo Service',
+        'Soft Copy (Provided via Pendrive)',
+      ]
+    }
 
     const rawPrice = quotation.price ?? 119000
-    const formattedPrice = Number(rawPrice).toLocaleString('en-IN')
+    const numPrice = Number(String(rawPrice).replace(/[^\d]/g, '')) || 119000
+    const formattedPrice = numPrice.toLocaleString('en-IN')
 
     const totalCount = deliverables.length + events.reduce((s, e) => s + (e.services?.length || 0), 0)
     const compactClass = totalCount > 24 ? 'fewdays-ultra-compact' : totalCount > 18 ? 'fewdays-compact' : ''

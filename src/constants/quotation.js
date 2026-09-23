@@ -175,19 +175,94 @@ export const LITHE_ADS_PACKAGE_PRESETS = {
   ],
 }
 
+export const FEWDAYS_TEAM_ROLES = [
+  { id: 'traditional_photographer', label: 'Traditional Photographer' },
+  { id: 'traditional_cinematographer', label: 'Traditional Cinematographer' },
+  { id: 'candid_photographer', label: 'Candid Photographer' },
+  { id: 'candid_cinematographer', label: 'Candid Cinematographer' },
+  { id: 'drone_pilot', label: 'Drone Pilot' },
+]
+
+export const FEWDAYS_SERVICES = [
+  {
+    id: 'edited_photos',
+    name: 'Edited Photos',
+    category: 'photo',
+    hasPhotoQuantity: true,
+    defaultQuantity: '200+',
+  },
+  { id: 'spot_edited_photos', name: 'Spot Edited Photos (For Story/Status)', category: 'photo' },
+  {
+    id: 'fewdays_album',
+    name: '40 Leaf Premium Luster Laminated Album',
+    category: 'photo',
+    hasLeafCount: true,
+    defaultLeaves: 40,
+  },
+  { id: 'extra_leaves_10', name: '10 Extra Leaves (Complimentary)', category: 'photo' },
+  { id: 'mini_album', name: '10 Leaf Mini Album', category: 'photo' },
+  { id: 'photo_calendar', name: 'Photo Calendar', category: 'photo' },
+  { id: 'photo_frame', name: 'Photo Frame', category: 'photo' },
+  { id: 'couple_reel', name: 'Couple Reel', category: 'video' },
+  { id: 'function_reel', name: 'Function Reel', category: 'video' },
+  { id: 'wedding_highlights', name: 'Wedding Highlights (3 to 7 min)', category: 'video' },
+  { id: 'wedding_full_length', name: 'Wedding Full Length Video (10+ min)', category: 'video' },
+  { id: 'complimentary_post_wedding', name: 'Complimentary Post-Wedding Shoot (Photo & Video)', category: 'other' },
+  { id: 'drone_service', name: 'Drone Service', category: 'other' },
+  { id: 'live_qr', name: 'Live QR Photo Service', category: 'other' },
+  { id: 'soft_copy', name: 'Soft Copy (Provided via Pendrive)', category: 'other' },
+]
+
+export const FEWDAYS_PACKAGE_PRESETS = {
+  [PACKAGES.WITH_ALBUM]: [
+    'edited_photos',
+    'spot_edited_photos',
+    'fewdays_album',
+    'extra_leaves_10',
+    'mini_album',
+    'photo_calendar',
+    'photo_frame',
+    'couple_reel',
+    'function_reel',
+    'wedding_highlights',
+    'wedding_full_length',
+    'complimentary_post_wedding',
+    'drone_service',
+    'live_qr',
+    'soft_copy',
+  ],
+  [PACKAGES.WITHOUT_ALBUM]: [
+    'edited_photos',
+    'spot_edited_photos',
+    'photo_calendar',
+    'photo_frame',
+    'couple_reel',
+    'function_reel',
+    'wedding_highlights',
+    'wedding_full_length',
+    'complimentary_post_wedding',
+    'drone_service',
+    'live_qr',
+    'soft_copy',
+  ],
+}
+
 export function getServicesForCompany(company) {
+  if (company === 'fewdays') return FEWDAYS_SERVICES
   if (company === 'litheads') return LITHE_ADS_SERVICES
   if (company === 'piktoria') return PIKTORIA_SERVICES
   return SERVICES
 }
 
 export function getPackagePresetsForCompany(company) {
+  if (company === 'fewdays') return FEWDAYS_PACKAGE_PRESETS
   if (company === 'litheads') return LITHE_ADS_PACKAGE_PRESETS
   if (company === 'piktoria') return PIKTORIA_PACKAGE_PRESETS
   return PACKAGE_PRESETS
 }
 
 export function getTeamRolesForCompany(company) {
+  if (company === 'fewdays') return FEWDAYS_TEAM_ROLES
   if (company === 'litheads') return LITHE_ADS_TEAM_ROLES
   return TEAM_ROLES
 }

@@ -4,16 +4,12 @@ import QuantityControl from '../components/QuantityControl'
 import { PreviewStep } from './Preview'
 import {
   CLIENT_TYPES,
-  PACKAGES,
   PACKAGE_LABELS,
   COVERAGE_TYPES,
   COVERAGE_LABELS,
   COVERAGE_SIDES,
   COVERAGE_SIDE_LABELS,
-  SERVICES,
   getServicesForCompany,
-  getPackagePresetsForCompany,
-  TEAM_ROLES,
   getTeamRolesForCompany,
   FORM_STEPS,
   LEAF_OPTIONS,
@@ -28,7 +24,6 @@ import {
   parseMonthAndDay,
 } from '../utils/quotation'
 import { api } from '../utils/api'
-import FewdaysQuotationForm from '../components/FewdaysQuotationForm'
 import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar'
 
@@ -54,6 +49,44 @@ function StepNav({ currentStep, onStepClick, maxStep }) {
 function ClientStep({ data, onChange, company }) {
   const currentCompany = data.company || company || 'naj'
   const isLitheAds = currentCompany === 'litheads'
+  const isFewdays = currentCompany === 'fewdays'
+
+  if (isFewdays) {
+    const clientName = data.clientName || ''
+    const displayGreeting = clientName.trim()
+      ? (clientName.trim().toLowerCase().startsWith('hello ') ? clientName.trim() : `Hello ${clientName.trim()},`)
+      : 'Hello Safwan,'
+
+    return (
+      <div className="form-step">
+        <h2>Client Details</h2>
+        <div className="form-field">
+          <label htmlFor="clientName">Client Name</label>
+          <input
+            id="clientName"
+            type="text"
+            value={clientName}
+            onChange={(e) => {
+              const val = e.target.value
+              onChange({
+                clientName: val,
+                greeting: val.trim()
+                  ? (val.trim().toLowerCase().startsWith('hello ') ? val.trim() : `Hello ${val.trim()},`)
+                  : '',
+              })
+            }}
+            placeholder="e.g. Safwan or Hiba"
+          />
+          <p className="form-hint">Enter the client name for the first page greeting.</p>
+        </div>
+
+        <div className="greeting-preview">
+          <span>First page greeting:</span>
+          <strong>{displayGreeting}</strong>
+        </div>
+      </div>
+    )
+  }
 
   if (isLitheAds) {
     const clientName = data.clientName || ''
@@ -187,6 +220,7 @@ function PackageStep({ data, onChange, company }) {
 function CoverageStep({ data, onChange, company }) {
   const currentCompany = data.company || company || 'naj'
   const isLitheAds = currentCompany === 'litheads'
+  const isFewdays = currentCompany === 'fewdays'
   const teamRoles = getTeamRolesForCompany(currentCompany)
   const [showAddMenu, setShowAddMenu] = useState(false)
 
@@ -313,7 +347,38 @@ function CoverageStep({ data, onChange, company }) {
               width: '100%',
             }}
           >
-            {isLitheAds ? (
+            {isFewdays ? (
+              <>
+                <div className="form-field-sm" style={{ flex: '1 1 240px', minWidth: '200px' }}>
+                  <label htmlFor={`coverage-name-${coverage.id}`}>Event Name</label>
+                  <input
+                    id={`coverage-name-${coverage.id}`}
+                    type="text"
+                    placeholder="e.g. Mehandi Night or Wedding Day"
+                    value={coverage.customName || ''}
+                    onChange={(e) => updateCoverage(coverage.id, { customName: e.target.value })}
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div className="form-field-sm" style={{ flex: '0 0 160px', minWidth: '130px' }}>
+                  <label htmlFor={`coverage-date-${coverage.id}`}>Event Date (Optional)</label>
+                  <input
+                    id={`coverage-date-${coverage.id}`}
+                    type="text"
+                    placeholder="e.g. Dec 12"
+                    value={coverage.date || ''}
+                    onChange={(e) => updateCoverage(coverage.id, { date: e.target.value })}
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </>
+            ) : isLitheAds ? (
               <>
                 <div className="form-field-sm" style={{ flex: '0 0 160px', minWidth: '130px' }}>
                   <label htmlFor={`coverage-month-${coverage.id}`}>Month</label>
@@ -446,45 +511,57 @@ function CoverageStep({ data, onChange, company }) {
       ))}
 
       <div className="add-coverage-wrapper">
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => setShowAddMenu(!showAddMenu)}
-        >
-          + ADD COVERAGE EVENT
-        </button>
-        {showAddMenu && (
-          <div className="add-coverage-menu">
-            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.CUSTOM)}>
-              {isLitheAds ? 'New Event (Custom Name)' : 'Custom Event'}
+        {isFewdays ? (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={addCustomCoverage}
+          >
+            + ADD EVENT
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setShowAddMenu(!showAddMenu)}
+            >
+              + ADD COVERAGE EVENT
             </button>
-            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.BRIDE_EVE)}>
-              Bride Eve
-            </button>
-            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_NIKKAH)}>
-              Wedding Nikkah
-            </button>
-            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.GROOM_EVE)}>
-              Groom Eve
-            </button>
-            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_DAY)}>
-              Wedding Day
-            </button>
-            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_RECEPTION)}>
-              Wedding Reception
-            </button>
-            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.ENGAGEMENT)}>
-              Engagement
-            </button>
-            <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.HALDI)}>
-              Haldi
-            </button>
-            {!isLitheAds && (
-              <button type="button" onClick={addCustomCoverage}>
-                Prompt Event Name
-              </button>
+            {showAddMenu && (
+              <div className="add-coverage-menu">
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.CUSTOM)}>
+                  {isLitheAds ? 'New Event (Custom Name)' : 'Custom Event'}
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.BRIDE_EVE)}>
+                  Bride Eve
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_NIKKAH)}>
+                  Wedding Nikkah
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.GROOM_EVE)}>
+                  Groom Eve
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_DAY)}>
+                  Wedding Day
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.WEDDING_RECEPTION)}>
+                  Wedding Reception
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.ENGAGEMENT)}>
+                  Engagement
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.HALDI)}>
+                  Haldi
+                </button>
+                {!isLitheAds && (
+                  <button type="button" onClick={addCustomCoverage}>
+                    Prompt Event Name
+                  </button>
+                )}
+              </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
@@ -554,6 +631,8 @@ function ServicesStep({ data, onChange, company }) {
         displayName = `${currentLeaves * 2} Pages Wedding Album`
       } else if (currentCompany === 'piktoria') {
         displayName = `${currentLeaves}-Leaf Wedding Album`
+      } else if (currentCompany === 'fewdays') {
+        displayName = `${currentLeaves} Leaf Premium Luster Laminated Album`
       } else {
         displayName = `${currentLeaves} Leaf Premium Album`
       }
@@ -640,17 +719,17 @@ function ServicesStep({ data, onChange, company }) {
       ) : (
         <>
           <div className="services-group">
-            <h3>Video</h3>
-            {grouped.video.map(renderService)}
-          </div>
-
-          <div className="services-group">
-            <h3>Photography / Album</h3>
+            <h3>{currentCompany === 'fewdays' ? 'Photography & Albums' : 'Photography / Album'}</h3>
             {grouped.photo.map(renderService)}
           </div>
 
           <div className="services-group">
-            <h3>Other</h3>
+            <h3>{currentCompany === 'fewdays' ? 'Video & Reels' : 'Video'}</h3>
+            {grouped.video.map(renderService)}
+          </div>
+
+          <div className="services-group">
+            <h3>{currentCompany === 'fewdays' ? 'Special Services & Deliverables' : 'Other'}</h3>
             {grouped.other.map(renderService)}
           </div>
         </>
@@ -662,6 +741,7 @@ function ServicesStep({ data, onChange, company }) {
 function PriceStep({ data, onChange, company }) {
   const currentCompany = data.company || company || 'naj'
   const isLitheAds = currentCompany === 'litheads'
+  const isFewdays = currentCompany === 'fewdays'
 
   return (
     <div className="form-step">
@@ -675,13 +755,13 @@ function PriceStep({ data, onChange, company }) {
             type="text"
             value={data.price}
             onChange={(e) => onChange({ price: e.target.value })}
-            placeholder={isLitheAds ? 'e.g. 75,000' : 'e.g. 43000'}
+            placeholder={isFewdays ? 'e.g. 1,19,000' : isLitheAds ? 'e.g. 75,000' : 'e.g. 43000'}
           />
         </div>
       </div>
 
       <div className="payment-terms-fixed">
-        <h3>Payment Policy {isLitheAds ? '(Lithe Ads)' : '(Fixed)'}</h3>
+        <h3>Payment Policy {isFewdays ? '(FEWDAYS STORIES)' : isLitheAds ? '(Lithe Ads)' : '(Fixed)'}</h3>
         <ul>
           {isLitheAds ? (
             <>
@@ -697,6 +777,11 @@ function PriceStep({ data, onChange, company }) {
             </>
           )}
         </ul>
+        {isFewdays && (
+          <p className="form-hint" style={{ marginTop: '8px', fontStyle: 'italic' }}>
+            Final deliverables (album/video/soft copy) will be released only after full payment is completed.
+          </p>
+        )}
       </div>
     </div>
   )
@@ -788,6 +873,9 @@ export default function QuotationForm() {
   const validateStep = (step) => {
     if (step === 0) {
       const currentCompany = data.company || company || 'naj'
+      if (currentCompany === 'fewdays') {
+        return !!data.clientName?.trim()
+      }
       if (currentCompany === 'litheads') {
         const name = data.clientName !== undefined ? data.clientName : (data.brideName || data.groomName)
         return !!(name?.trim() || data.greeting?.trim())
@@ -798,7 +886,7 @@ export default function QuotationForm() {
         return data.groomName?.trim() || data.brideName?.trim()
       }
     }
-    if (step === 4 && !data.price?.trim()) return false
+    if (step === 4 && !String(data.price || '').trim()) return false
     return true
   }
 
@@ -832,17 +920,6 @@ export default function QuotationForm() {
     return (
       <div className="loading-screen">
         <p>Loading quotation...</p>
-      </div>
-    )
-  }
-
-  if (company === 'fewdays' || data.company === 'fewdays') {
-    return (
-      <div className="app-layout">
-        <Sidebar activeTab="quotation" />
-        <main className="main-viewport">
-          <FewdaysQuotationForm initialData={data} quotationId={quotationId} />
-        </main>
       </div>
     )
   }
