@@ -335,7 +335,7 @@ export function createEmptyQuotation(company = 'naj') {
           ],
         },
       ],
-      completed: false,
+      completed: true,
       company: 'fewdays',
     }
   }
@@ -379,7 +379,7 @@ export function createEmptyQuotation(company = 'naj') {
           ],
         },
       ],
-      completed: false,
+      completed: true,
       company: 'litheads',
     }
   }
@@ -393,7 +393,7 @@ export function createEmptyQuotation(company = 'naj') {
     price: '',
     services: buildPresetServices(PACKAGES.WITH_ALBUM, company),
     coverages: [],
-    completed: false,
+    completed: true,
     company,
   }
 }

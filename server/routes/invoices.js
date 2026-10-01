@@ -61,7 +61,7 @@ router.get('/', (req, res) => {
   }
   const comp = req.user.company || 'naj'
   const invoices = readInvoices(comp)
-    .filter((i) => i.completed)
+    .filter((i) => i.completed !== false)
     .map((i) => ({
       id: i.id,
       displayName: getDisplayName(i),
@@ -79,20 +79,24 @@ router.get('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
   const comp = req.user.company || 'naj'
-  const invoice = readInvoices(comp).find((i) => i.id === req.params.id)
+  let invoice = readInvoices(comp).find((i) => i.id === req.params.id)
+  if (!invoice) {
+    const found = findInvoiceAcrossCompanies(req.params.id)
+    invoice = found.invoice
+  }
   if (!invoice) return res.status(404).json({ error: 'Not found' })
   res.json(invoice)
 })
 
 router.post('/', (req, res) => {
-  const comp = req.user.company || 'naj'
+  const comp = req.body.company || req.user.company || 'naj'
   const now = new Date().toISOString()
   const invoice = {
     id: uuidv4(),
     userId: req.user.id,
     company: comp,
     ...req.body,
-    completed: req.body.completed ?? false,
+    completed: req.body.completed ?? true,
     createdAt: now,
     updatedAt: now,
     pdfPath: null,
@@ -106,7 +110,7 @@ router.post('/', (req, res) => {
 })
 
 router.put('/:id', (req, res) => {
-  const comp = req.user.company || 'naj'
+  const comp = req.body.company || req.user.company || 'naj'
   const invoices = readInvoices(comp)
   const index = invoices.findIndex((i) => i.id === req.params.id)
   if (index === -1) return res.status(404).json({ error: 'Not found' })
@@ -116,6 +120,7 @@ router.put('/:id', (req, res) => {
     ...req.body,
     id: req.params.id,
     company: comp,
+    completed: req.body.completed ?? invoices[index].completed ?? true,
     updatedAt: new Date().toISOString(),
   }
 

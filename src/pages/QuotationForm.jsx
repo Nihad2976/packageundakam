@@ -900,13 +900,25 @@ export default function QuotationForm() {
 
   const autoSave = useCallback(
     (newData) => {
-      if (isNew || !quotationId) return
-
       if (saveTimer.current) clearTimeout(saveTimer.current)
       saveTimer.current = setTimeout(async () => {
+        const hasClient =
+          Boolean(newData.clientName?.trim()) ||
+          Boolean(newData.groomName?.trim()) ||
+          Boolean(newData.brideName?.trim())
+        if (!hasClient) return
+
         setSaving(true)
         try {
-          await api.updateQuotation(quotationId, { ...newData, completed: true })
+          if (quotationId) {
+            await api.updateQuotation(quotationId, { ...newData, completed: true })
+          } else {
+            const created = await api.createQuotation({ ...newData, completed: true })
+            if (created?.id) {
+              setQuotationId(created.id)
+              window.history.replaceState(null, '', `/quotation/${created.id}`)
+            }
+          }
         } catch (err) {
           console.error('Auto-save failed:', err)
         } finally {
@@ -914,14 +926,14 @@ export default function QuotationForm() {
         }
       }, 800)
     },
-    [isNew, quotationId],
+    [quotationId],
   )
 
   useEffect(() => {
-    if (!isNew && quotationId) {
+    if (!loading) {
       autoSave(data)
     }
-  }, [data, isNew, quotationId, autoSave])
+  }, [data, loading, autoSave])
 
   const validateStep = (step) => {
     if (step === 0) {
@@ -951,13 +963,19 @@ export default function QuotationForm() {
 
     const nextStep = currentStep + 1
 
-    if (currentStep === 4 && isNew) {
+    if (!quotationId) {
       try {
         const created = await api.createQuotation({ ...data, completed: true })
         setQuotationId(created.id)
+        window.history.replaceState(null, '', `/quotation/${created.id}`)
       } catch (err) {
-        alert('Failed to save quotation.')
-        return
+        console.error('Failed to create quotation on next:', err)
+      }
+    } else {
+      try {
+        await api.updateQuotation(quotationId, { ...data, completed: true })
+      } catch (err) {
+        console.error('Failed to update quotation on next:', err)
       }
     }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../utils/api'
 import InvoicePreview, { formatCurrency } from '../components/InvoicePreview'
@@ -36,8 +36,11 @@ export default function InvoiceForm() {
   const [advance, setAdvance] = useState(isFewdays ? 1000 : isPiktoria ? 2000 : 10000)
   const [loading, setLoading] = useState(!isNew)
   const [generating, setGenerating] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [savedTime, setSavedTime] = useState(null)
   const [previewMode, setPreviewMode] = useState(false)
   const [previewScale, setPreviewScale] = useState(0.62)
+  const saveTimer = useRef(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -78,6 +81,98 @@ export default function InvoiceForm() {
     0,
   )
   const balance = subTotal - (Number(advance) || 0)
+
+  // Debounced Autosave
+  const autoSaveInvoice = useCallback(
+    (currentCustomer, currentItems, currentAdvance, currentSubTotal, currentBalance) => {
+      if (!currentCustomer?.trim()) return
+
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+      saveTimer.current = setTimeout(async () => {
+        setSaving(true)
+        try {
+          const payload = {
+            customerName: currentCustomer.trim(),
+            company,
+            items: currentItems.map((it) => ({
+              name: it.name?.trim() || 'Item',
+              quantity: Number(it.quantity) || 1,
+              price: Number(it.price) || 0,
+              total: (Number(it.quantity) || 1) * (Number(it.price) || 0),
+            })),
+            subTotal: currentSubTotal,
+            advance: Number(currentAdvance) || 0,
+            balance: currentBalance,
+            completed: true,
+          }
+
+          if (invoiceId) {
+            await api.updateInvoice(invoiceId, payload)
+          } else {
+            const created = await api.createInvoice(payload)
+            if (created?.id) {
+              setInvoiceId(created.id)
+              window.history.replaceState(null, '', `/invoice/${created.id}`)
+            }
+          }
+          setSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+        } catch (err) {
+          console.error('Invoice auto-save failed:', err)
+        } finally {
+          setSaving(false)
+        }
+      }, 800)
+    },
+    [invoiceId, company],
+  )
+
+  useEffect(() => {
+    if (!loading) {
+      autoSaveInvoice(customerName, items, advance, subTotal, balance)
+    }
+  }, [customerName, items, advance, subTotal, balance, autoSaveInvoice, loading])
+
+  const handleManualSave = async () => {
+    if (!customerName.trim()) {
+      alert('Please enter Customer Name (Invoice To).')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const payload = {
+        customerName: customerName.trim(),
+        company,
+        items: items.map((it) => ({
+          name: it.name?.trim() || 'Item',
+          quantity: Number(it.quantity) || 1,
+          price: Number(it.price) || 0,
+          total: (Number(it.quantity) || 1) * (Number(it.price) || 0),
+        })),
+        subTotal,
+        advance: Number(advance) || 0,
+        balance,
+        completed: true,
+      }
+
+      if (invoiceId) {
+        await api.updateInvoice(invoiceId, payload)
+      } else {
+        const created = await api.createInvoice(payload)
+        if (created?.id) {
+          setInvoiceId(created.id)
+          window.history.replaceState(null, '', `/invoice/${created.id}`)
+        }
+      }
+      setSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+      alert('Invoice saved successfully!')
+    } catch (err) {
+      console.error('Manual save failed:', err)
+      alert('Failed to save invoice.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const handleItemChange = (index, field, value) => {
     setItems((prev) => {
@@ -208,17 +303,25 @@ export default function InvoiceForm() {
                   : 'Fill in customer details and invoice items'}
               </p>
             </div>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => {
-                if (previewMode) setPreviewMode(false)
-                else navigate('/')
-              }}
-              style={{ fontSize: '13px', padding: '8px 16px' }}
-            >
-              {previewMode ? '← Back to Form' : '← Back to Dashboard'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {saving && <span style={{ color: '#e67e22', fontSize: '13px', fontWeight: '600' }}>Saving...</span>}
+              {!saving && savedTime && (
+                <span style={{ color: '#27ae60', fontSize: '13px', fontWeight: '600' }}>
+                  ✓ Autosaved ({savedTime})
+                </span>
+              )}
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  if (previewMode) setPreviewMode(false)
+                  else navigate('/')
+                }}
+                style={{ fontSize: '13px', padding: '8px 16px' }}
+              >
+                {previewMode ? '← Back to Form' : '← Back to Dashboard'}
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -460,6 +563,15 @@ export default function InvoiceForm() {
                   </button>
                   <button
                     type="button"
+                    className="btn btn-secondary"
+                    style={{ padding: '14px 20px', fontSize: '14px', borderRadius: '8px' }}
+                    onClick={handleManualSave}
+                    disabled={saving}
+                  >
+                    💾 Save Invoice
+                  </button>
+                  <button
+                    type="button"
                     className="btn btn-primary"
                     style={{ padding: '14px 28px', fontSize: '15px', fontWeight: '700', borderRadius: '8px' }}
                     onClick={() => {
@@ -474,8 +586,8 @@ export default function InvoiceForm() {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-secondary"
-                    style={{ padding: '14px 20px', fontSize: '14px', borderRadius: '8px' }}
+                    className="btn btn-primary"
+                    style={{ background: '#27ae60', borderColor: '#27ae60', padding: '14px 20px', fontSize: '14px', borderRadius: '8px', fontWeight: '700' }}
                     onClick={handleGenerateInvoice}
                     disabled={generating}
                   >

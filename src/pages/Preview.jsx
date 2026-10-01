@@ -127,10 +127,16 @@ export function PreviewStep({ quotation, quotationId, onEdit }) {
       const name = getPdfFileName(quotation)
       const base64 = pdfBytesToBase64(bytes)
 
-      await api.savePdf(quotationId, base64, name)
-      await api.updateQuotation(quotationId, { ...quotation, completed: true })
+      let currentId = quotationId
+      if (!currentId) {
+        const created = await api.createQuotation({ ...quotation, completed: true })
+        currentId = created.id
+      }
 
-      navigate(`/quotation/${quotationId}/download`, {
+      await api.savePdf(currentId, base64, name)
+      await api.updateQuotation(currentId, { ...quotation, completed: true })
+
+      navigate(`/quotation/${currentId}/download`, {
         state: { pdfBytes: bytes, fileName: name },
       })
     } catch (err) {

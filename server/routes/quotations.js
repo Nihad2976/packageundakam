@@ -86,7 +86,7 @@ router.get('/', (req, res) => {
   }
   const comp = req.user.company || 'naj'
   const quotations = readQuotations(comp)
-    .filter((q) => q.completed)
+    .filter((q) => q.completed !== false)
     .map((q) => ({
       id: q.id,
       displayName: getDisplayName(q),
@@ -101,20 +101,24 @@ router.get('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
   const comp = req.user.company || 'naj'
-  const quotation = readQuotations(comp).find((q) => q.id === req.params.id)
+  let quotation = readQuotations(comp).find((q) => q.id === req.params.id)
+  if (!quotation) {
+    const found = findQuotationAcrossCompanies(req.params.id)
+    quotation = found.quotation
+  }
   if (!quotation) return res.status(404).json({ error: 'Not found' })
   res.json(quotation)
 })
 
 router.post('/', (req, res) => {
-  const comp = req.user.company || 'naj'
+  const comp = req.body.company || req.user.company || 'naj'
   const now = new Date().toISOString()
   const quotation = {
     id: uuidv4(),
     userId: req.user.id,
     ...req.body,
     company: comp,
-    completed: req.body.completed ?? false,
+    completed: req.body.completed ?? true,
     createdAt: now,
     updatedAt: now,
     pdfPath: null,
@@ -129,7 +133,7 @@ router.post('/', (req, res) => {
 })
 
 router.put('/:id', (req, res) => {
-  const comp = req.user.company || 'naj'
+  const comp = req.body.company || req.user.company || 'naj'
   const quotations = readQuotations(comp)
   const index = quotations.findIndex((q) => q.id === req.params.id)
   if (index === -1) return res.status(404).json({ error: 'Not found' })
@@ -139,6 +143,7 @@ router.put('/:id', (req, res) => {
     ...req.body,
     id: req.params.id,
     company: comp,
+    completed: req.body.completed ?? quotations[index].completed ?? true,
     updatedAt: new Date().toISOString(),
   }
 
