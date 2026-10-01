@@ -885,10 +885,23 @@ export default function QuotationForm() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
 
+  const quotationIdRef = useRef(isNew ? null : id)
+  const isCreatingRef = useRef(false)
+  const latestDataRef = useRef(data)
+
+  useEffect(() => {
+    quotationIdRef.current = quotationId || (isNew ? null : id)
+  }, [quotationId, id, isNew])
+
+  useEffect(() => {
+    latestDataRef.current = data
+  }, [data])
+
   useEffect(() => {
     if (isNew) {
       setData(createEmptyQuotation(company))
       setQuotationId(null)
+      quotationIdRef.current = null
       setCurrentStep(0)
       setMaxStep(0)
       setLoading(false)
@@ -916,6 +929,7 @@ export default function QuotationForm() {
           deliverables: q.deliverables || [],
         })
         setQuotationId(q.id)
+        quotationIdRef.current = q.id
         setMaxStep(FORM_STEPS.length - 1)
       })
       .catch(() => navigate('/'))
@@ -929,36 +943,68 @@ export default function QuotationForm() {
     [],
   )
 
+  const performSave = useCallback(
+    async (newData) => {
+      const hasClient =
+        Boolean(newData.clientName?.trim()) ||
+        Boolean(newData.groomName?.trim()) ||
+        Boolean(newData.brideName?.trim()) ||
+        Boolean(newData.greeting?.trim())
+      if (!hasClient) return
+
+      const currentId = quotationIdRef.current || (isNew ? null : id)
+
+      setSaving(true)
+      try {
+        if (currentId) {
+          await api.updateQuotation(currentId, { ...newData, completed: true })
+        } else if (!isCreatingRef.current) {
+          isCreatingRef.current = true
+          const created = await api.createQuotation({ ...newData, completed: true })
+          if (created?.id) {
+            quotationIdRef.current = created.id
+            setQuotationId(created.id)
+            window.history.replaceState(null, '', `/quotation/${created.id}`)
+          }
+        }
+      } catch (err) {
+        console.error('Auto-save failed:', err)
+      } finally {
+        isCreatingRef.current = false
+        setSaving(false)
+      }
+    },
+    [id, isNew],
+  )
+
   const autoSave = useCallback(
     (newData) => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(async () => {
-        const hasClient =
-          Boolean(newData.clientName?.trim()) ||
-          Boolean(newData.groomName?.trim()) ||
-          Boolean(newData.brideName?.trim())
-        if (!hasClient) return
-
-        setSaving(true)
-        try {
-          if (quotationId) {
-            await api.updateQuotation(quotationId, { ...newData, completed: true })
-          } else {
-            const created = await api.createQuotation({ ...newData, completed: true })
-            if (created?.id) {
-              setQuotationId(created.id)
-              window.history.replaceState(null, '', `/quotation/${created.id}`)
-            }
-          }
-        } catch (err) {
-          console.error('Auto-save failed:', err)
-        } finally {
-          setSaving(false)
-        }
-      }, 800)
+      saveTimer.current = setTimeout(() => {
+        performSave(newData)
+      }, 600)
     },
-    [quotationId],
+    [performSave],
   )
+
+  // Flush pending save immediately on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current)
+        const d = latestDataRef.current
+        const hasClient =
+          Boolean(d?.clientName?.trim()) ||
+          Boolean(d?.groomName?.trim()) ||
+          Boolean(d?.brideName?.trim()) ||
+          Boolean(d?.greeting?.trim())
+        const targetId = quotationIdRef.current || (isNew ? null : id)
+        if (hasClient && targetId) {
+          api.updateQuotation(targetId, { ...d, completed: true }).catch(() => {})
+        }
+      }
+    }
+  }, [id, isNew])
 
   useEffect(() => {
     if (!loading) {

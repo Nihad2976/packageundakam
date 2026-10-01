@@ -54,6 +54,11 @@ function getDisplayName(q) {
   const groom = q.groomName?.trim() || ''
   const bride = q.brideName?.trim() || ''
   if (groom && bride) return `${groom} & ${bride}`
+  if (q.greeting?.trim()) {
+    const cleaned = q.greeting.replace(/^(Hello|Hi)\s+/i, '').replace(/,\s*$/, '').trim()
+    if (cleaned) return cleaned
+  }
+  if (q.packageTitle?.trim()) return q.packageTitle.trim()
   return groom || bride || 'Unnamed'
 }
 
@@ -134,28 +139,50 @@ router.post('/', (req, res) => {
 
 router.put('/:id', (req, res) => {
   const comp = req.body.company || req.user.company || 'naj'
-  const quotations = readQuotations(comp)
-  const index = quotations.findIndex((q) => q.id === req.params.id)
+  let quotations = readQuotations(comp)
+  let index = quotations.findIndex((q) => q.id === req.params.id)
+  let targetComp = comp
+
+  if (index === -1) {
+    const found = findQuotationAcrossCompanies(req.params.id)
+    if (found.quotation) {
+      targetComp = found.company
+      quotations = readQuotations(targetComp)
+      index = quotations.findIndex((q) => q.id === req.params.id)
+    }
+  }
+
   if (index === -1) return res.status(404).json({ error: 'Not found' })
 
   quotations[index] = {
     ...quotations[index],
     ...req.body,
     id: req.params.id,
-    company: comp,
+    company: targetComp,
     completed: req.body.completed ?? quotations[index].completed ?? true,
     updatedAt: new Date().toISOString(),
   }
 
-  writeQuotations(comp, quotations)
-  recordCompanyUsage(req.user.id, comp)
+  writeQuotations(targetComp, quotations)
+  recordCompanyUsage(req.user.id, targetComp)
   res.json(quotations[index])
 })
 
 router.delete('/:id', (req, res) => {
   const comp = req.user.company || 'naj'
-  const quotations = readQuotations(comp)
-  const index = quotations.findIndex((q) => q.id === req.params.id)
+  let quotations = readQuotations(comp)
+  let index = quotations.findIndex((q) => q.id === req.params.id)
+  let targetComp = comp
+
+  if (index === -1) {
+    const found = findQuotationAcrossCompanies(req.params.id)
+    if (found.quotation) {
+      targetComp = found.company
+      quotations = readQuotations(targetComp)
+      index = quotations.findIndex((q) => q.id === req.params.id)
+    }
+  }
+
   if (index === -1) return res.status(404).json({ error: 'Not found' })
 
   const [removed] = quotations.splice(index, 1)
@@ -164,7 +191,7 @@ router.delete('/:id', (req, res) => {
     if (fs.existsSync(pdfFile)) fs.unlinkSync(pdfFile)
   }
 
-  writeQuotations(comp, quotations)
+  writeQuotations(targetComp, quotations)
   res.json({ success: true })
 })
 
@@ -175,8 +202,19 @@ router.post('/:id/pdf', (req, res) => {
     return res.status(400).json({ error: 'PDF data required' })
   }
 
-  const quotations = readQuotations(comp)
-  const index = quotations.findIndex((q) => q.id === req.params.id)
+  let quotations = readQuotations(comp)
+  let index = quotations.findIndex((q) => q.id === req.params.id)
+  let targetComp = comp
+
+  if (index === -1) {
+    const found = findQuotationAcrossCompanies(req.params.id)
+    if (found.quotation) {
+      targetComp = found.company
+      quotations = readQuotations(targetComp)
+      index = quotations.findIndex((q) => q.id === req.params.id)
+    }
+  }
+
   if (index === -1) return res.status(404).json({ error: 'Not found' })
 
   const existing = quotations[index]
@@ -193,13 +231,13 @@ router.post('/:id/pdf', (req, res) => {
   quotations[index] = {
     ...existing,
     pdfPath: storedName,
-    company: comp,
+    company: targetComp,
     completed: true,
     updatedAt: new Date().toISOString(),
   }
 
-  writeQuotations(comp, quotations)
-  recordCompanyUsage(req.user.id, comp)
+  writeQuotations(targetComp, quotations)
+  recordCompanyUsage(req.user.id, targetComp)
   res.json({ pdfPath: storedName, fileName: safeName })
 })
 

@@ -36,6 +36,17 @@ export default function Dashboard() {
       return
     }
     loadData()
+
+    const handleFocus = () => loadData()
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') loadData()
+    }
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
   }, [user, navigate])
 
   const handleDeleteQuotation = async (e, id, name) => {
@@ -97,7 +108,7 @@ export default function Dashboard() {
       return true
     })
     .filter((item) =>
-      item.displayName.toLowerCase().includes(search.toLowerCase()),
+      (item.displayName || 'Unnamed').toLowerCase().includes((search || '').toLowerCase()),
     )
 
   const formatDate = (isoString) => {

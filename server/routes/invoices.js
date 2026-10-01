@@ -111,27 +111,49 @@ router.post('/', (req, res) => {
 
 router.put('/:id', (req, res) => {
   const comp = req.body.company || req.user.company || 'naj'
-  const invoices = readInvoices(comp)
-  const index = invoices.findIndex((i) => i.id === req.params.id)
+  let invoices = readInvoices(comp)
+  let index = invoices.findIndex((i) => i.id === req.params.id)
+  let targetComp = comp
+
+  if (index === -1) {
+    const found = findInvoiceAcrossCompanies(req.params.id)
+    if (found.invoice) {
+      targetComp = found.company
+      invoices = readInvoices(targetComp)
+      index = invoices.findIndex((i) => i.id === req.params.id)
+    }
+  }
+
   if (index === -1) return res.status(404).json({ error: 'Not found' })
 
   invoices[index] = {
     ...invoices[index],
     ...req.body,
     id: req.params.id,
-    company: comp,
+    company: targetComp,
     completed: req.body.completed ?? invoices[index].completed ?? true,
     updatedAt: new Date().toISOString(),
   }
 
-  writeInvoices(comp, invoices)
+  writeInvoices(targetComp, invoices)
   res.json(invoices[index])
 })
 
 router.delete('/:id', (req, res) => {
   const comp = req.user.company || 'naj'
-  const invoices = readInvoices(comp)
-  const index = invoices.findIndex((i) => i.id === req.params.id)
+  let invoices = readInvoices(comp)
+  let index = invoices.findIndex((i) => i.id === req.params.id)
+  let targetComp = comp
+
+  if (index === -1) {
+    const found = findInvoiceAcrossCompanies(req.params.id)
+    if (found.invoice) {
+      targetComp = found.company
+      invoices = readInvoices(targetComp)
+      index = invoices.findIndex((i) => i.id === req.params.id)
+    }
+  }
+
   if (index === -1) return res.status(404).json({ error: 'Not found' })
 
   const [removed] = invoices.splice(index, 1)
@@ -140,7 +162,7 @@ router.delete('/:id', (req, res) => {
     if (fs.existsSync(pdfFile)) fs.unlinkSync(pdfFile)
   }
 
-  writeInvoices(comp, invoices)
+  writeInvoices(targetComp, invoices)
   res.json({ success: true })
 })
 
@@ -151,8 +173,19 @@ router.post('/:id/pdf', (req, res) => {
     return res.status(400).json({ error: 'PDF data required' })
   }
 
-  const invoices = readInvoices(comp)
-  const index = invoices.findIndex((i) => i.id === req.params.id)
+  let invoices = readInvoices(comp)
+  let index = invoices.findIndex((i) => i.id === req.params.id)
+  let targetComp = comp
+
+  if (index === -1) {
+    const found = findInvoiceAcrossCompanies(req.params.id)
+    if (found.invoice) {
+      targetComp = found.company
+      invoices = readInvoices(targetComp)
+      index = invoices.findIndex((i) => i.id === req.params.id)
+    }
+  }
+
   if (index === -1) return res.status(404).json({ error: 'Invoice not found' })
 
   const existing = invoices[index]
@@ -169,12 +202,12 @@ router.post('/:id/pdf', (req, res) => {
   invoices[index] = {
     ...existing,
     pdfPath: storedName,
-    company: comp,
+    company: targetComp,
     completed: true,
     updatedAt: new Date().toISOString(),
   }
 
-  writeInvoices(comp, invoices)
+  writeInvoices(targetComp, invoices)
   res.json({ pdfPath: storedName, fileName: safeName })
 })
 
