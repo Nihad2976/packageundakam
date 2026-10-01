@@ -34,6 +34,8 @@ export const COVERAGE_TYPES = {
   WEDDING_RECEPTION: 'wedding_reception',
   ENGAGEMENT: 'engagement',
   HALDI: 'haldi',
+  BETROTHAL: 'betrothal',
+  MADHURAVEPPU: 'madhuraveppu',
   CUSTOM: 'custom',
 }
 
@@ -45,6 +47,8 @@ export const COVERAGE_LABELS = {
   [COVERAGE_TYPES.WEDDING_RECEPTION]: 'Wedding Reception',
   [COVERAGE_TYPES.ENGAGEMENT]: 'Engagement',
   [COVERAGE_TYPES.HALDI]: 'Haldi',
+  [COVERAGE_TYPES.BETROTHAL]: 'Betrothal',
+  [COVERAGE_TYPES.MADHURAVEPPU]: 'Madhuraveppu',
   [COVERAGE_TYPES.CUSTOM]: 'Custom',
 }
 
@@ -53,6 +57,7 @@ export const TEAM_ROLES = [
   { id: 'traditional_cinematographer', label: 'Traditional Cinematographer' },
   { id: 'candid_photographer', label: 'Candid Photographer' },
   { id: 'candid_cinematographer', label: 'Candid Cinematographer' },
+  { id: 'drone_videographer', label: 'Drone Videographer' },
 ]
 
 export const SERVICES = [
@@ -69,9 +74,11 @@ export const SERVICES = [
   },
   { id: 'premium_album', name: '30 Leaf Premium Album', category: 'photo', hasLeafCount: true, defaultLeaves: 30 },
   { id: 'mini_album', name: 'Mini Album', category: 'photo' },
+  { id: 'couple_mini_wedding_album', name: 'Couple Mini Wedding Album', category: 'photo' },
   { id: 'table_calendar', name: 'Table Calendar', category: 'photo' },
   { id: 'live_qr', name: 'Live QR Code Photo Gallery (Day & Reception)', category: 'other' },
   { id: 'soft_copy', name: 'Soft Copy (Provided via Pendrive)', category: 'other' },
+  { id: 'drone_videographer', name: 'Drone Videographer', category: 'video' },
 ]
 
 export const LEAF_OPTIONS = [25, 30, 35, 40, 45, 50]
@@ -87,6 +94,7 @@ export const PIKTORIA_SERVICES = [
   { id: 'wedding_highlights', name: 'Wedding Highlights Video – 3–5 Minutes', category: 'video' },
   { id: 'piktoria_album', name: '40-Leaf Wedding Album', category: 'photo', hasLeafCount: true, defaultLeaves: 40 },
   { id: 'mini_album', name: 'Mini Photo Album', category: 'photo' },
+  { id: 'couple_mini_wedding_album', name: 'Couple Mini Wedding Album', category: 'photo' },
   { id: 'photo_frame', name: 'Photo Frame', category: 'photo' },
   { id: 'calendar', name: 'Calendar', category: 'photo' },
   { id: 'soft_copy', name: 'Soft Copy – Pen Drive or Cloud Drive (Client’s Choice)', category: 'other' },
@@ -136,6 +144,7 @@ export const PIKTORIA_PACKAGE_PRESETS = {
 export const LITHE_ADS_TEAM_ROLES = [
   { id: 'photographer', label: 'Photographer' },
   { id: 'videographer', label: 'Videographer' },
+  { id: 'drone_videographer', label: 'Drone Videographer' },
 ]
 
 export const LITHE_ADS_SERVICES = [
@@ -147,6 +156,7 @@ export const LITHE_ADS_SERVICES = [
   { id: 'social_reels', name: 'Social Media Reels (30 Sec Each)', category: 'deliverable' },
   { id: 'pre_wed_reel', name: 'Pre Wed Reel', category: 'deliverable' },
   { id: 'pre_wed_photos', name: 'Pre Wed Colour Graded Photos', category: 'deliverable' },
+  { id: 'couple_mini_wedding_album', name: 'Couple Mini Wedding Album', category: 'deliverable' },
   { id: 'pre_wed_shoot', name: 'Pre Wed Photoshoot And Videography', category: 'addon' },
   { id: 'mini_album', name: 'Mini Album', category: 'addon' },
   { id: 'calendar', name: 'Calender', category: 'addon' },
@@ -181,6 +191,7 @@ export const FEWDAYS_TEAM_ROLES = [
   { id: 'candid_photographer', label: 'Candid Photographer' },
   { id: 'candid_cinematographer', label: 'Candid Cinematographer' },
   { id: 'drone_pilot', label: 'Drone Pilot' },
+  { id: 'drone_videographer', label: 'Drone Videographer' },
 ]
 
 export const FEWDAYS_SERVICES = [
@@ -201,6 +212,7 @@ export const FEWDAYS_SERVICES = [
   },
   { id: 'extra_leaves_10', name: '10 Extra Leaves (Complimentary)', category: 'photo' },
   { id: 'mini_album', name: '10 Leaf Mini Album', category: 'photo' },
+  { id: 'couple_mini_wedding_album', name: 'Couple Mini Wedding Album', category: 'photo' },
   { id: 'photo_calendar', name: 'Photo Calendar', category: 'photo' },
   { id: 'photo_frame', name: 'Photo Frame', category: 'photo' },
   { id: 'couple_reel', name: 'Couple Reel', category: 'video' },

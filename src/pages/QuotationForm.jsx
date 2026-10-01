@@ -566,6 +566,12 @@ function CoverageStep({ data, onChange, company }) {
                 <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.GROOM_EVE)}>
                   Groom Eve
                 </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.BETROTHAL)}>
+                  Betrothal
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.MADHURAVEPPU)}>
+                  Madhuraveppu
+                </button>
                 <button type="button" onClick={addCustomCoverage}>
                   + Custom Event (Enter Name)
                 </button>
@@ -607,6 +613,12 @@ function CoverageStep({ data, onChange, company }) {
                 <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.HALDI)}>
                   Haldi
                 </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.BETROTHAL)}>
+                  Betrothal
+                </button>
+                <button type="button" onClick={() => addCoverage(COVERAGE_TYPES.MADHURAVEPPU)}>
+                  Madhuraveppu
+                </button>
                 {!isLitheAds && (
                   <button type="button" onClick={addCustomCoverage}>
                     Prompt Event Name
@@ -634,30 +646,46 @@ function ServicesStep({ data, onChange, company }) {
   }
 
   const toggleService = (serviceId) => {
+    const exists = data.services?.some((s) => s.id === serviceId)
+    const newServices = exists
+      ? data.services.map((s) => {
+          if (s.id !== serviceId) return s
+          const selected = !s.selected
+          return { ...s, selected, quantity: selected ? 1 : 0 }
+        })
+      : [...(data.services || []), { id: serviceId, selected: true, quantity: 1 }]
     onChange({
-      services: data.services.map((s) => {
-        if (s.id !== serviceId) return s
-        const selected = !s.selected
-        return { ...s, selected, quantity: selected ? 1 : 0 }
-      }),
+      services: newServices,
     })
   }
 
   const setQuantity = (serviceId, quantity) => {
+    const exists = data.services?.some((s) => s.id === serviceId)
+    const newServices = exists
+      ? data.services.map((s) => (s.id === serviceId ? { ...s, quantity } : s))
+      : [...(data.services || []), { id: serviceId, selected: true, quantity }]
     onChange({
-      services: data.services.map((s) => (s.id === serviceId ? { ...s, quantity } : s)),
+      services: newServices,
     })
   }
 
   const setPhotoQuantity = (serviceId, photoQuantity) => {
+    const exists = data.services?.some((s) => s.id === serviceId)
+    const newServices = exists
+      ? data.services.map((s) => (s.id === serviceId ? { ...s, photoQuantity } : s))
+      : [...(data.services || []), { id: serviceId, selected: true, quantity: 1, photoQuantity }]
     onChange({
-      services: data.services.map((s) => (s.id === serviceId ? { ...s, photoQuantity } : s)),
+      services: newServices,
     })
   }
 
   const setLeafCount = (serviceId, leafCount) => {
+    const exists = data.services?.some((s) => s.id === serviceId)
+    const newServices = exists
+      ? data.services.map((s) => (s.id === serviceId ? { ...s, leafCount: Number(leafCount) } : s))
+      : [...(data.services || []), { id: serviceId, selected: true, quantity: 1, leafCount: Number(leafCount) }]
     onChange({
-      services: data.services.map((s) => (s.id === serviceId ? { ...s, leafCount: Number(leafCount) } : s)),
+      services: newServices,
     })
   }
 
@@ -673,8 +701,11 @@ function ServicesStep({ data, onChange, company }) {
       }
 
   const renderService = (serviceDef) => {
-    const service = data.services.find((s) => s.id === serviceDef.id)
-    if (!service) return null
+    const service = data.services?.find((s) => s.id === serviceDef.id) || {
+      id: serviceDef.id,
+      selected: false,
+      quantity: 0,
+    }
 
     const currentLeaves = service.leafCount || serviceDef.defaultLeaves || (isLitheAds || currentCompany === 'piktoria' ? 40 : 30)
 

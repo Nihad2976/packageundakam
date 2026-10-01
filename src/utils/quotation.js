@@ -261,6 +261,7 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
         { id: 'candid_photographer', selected: false, quantity: 0 },
         { id: 'candid_cinematographer', selected: false, quantity: 0 },
         { id: 'drone_pilot', selected: false, quantity: 0 },
+        { id: 'drone_videographer', selected: false, quantity: 0 },
       ],
     }
   }
@@ -269,7 +270,7 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
     return {
       id: generateUUID(),
       type,
-      customName,
+      customName: customName || (type !== COVERAGE_TYPES.CUSTOM ? COVERAGE_LABELS[type] || '' : ''),
       month,
       day,
       date: date || `${month.slice(0, 3)} ${getDayWithSuffix(day)}`,
@@ -277,6 +278,7 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
       roles: [
         { id: 'photographer', selected: true, quantity: 1 },
         { id: 'videographer', selected: true, quantity: 1 },
+        { id: 'drone_videographer', selected: false, quantity: 0 },
       ],
     }
   }
@@ -291,6 +293,7 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
       { id: 'traditional_cinematographer', selected: true, quantity: 1 },
       { id: 'candid_photographer', selected: type === COVERAGE_TYPES.WEDDING_NIKKAH || type === COVERAGE_TYPES.WEDDING_DAY, quantity: (type === COVERAGE_TYPES.WEDDING_NIKKAH || type === COVERAGE_TYPES.WEDDING_DAY) ? 1 : 0 },
       { id: 'candid_cinematographer', selected: type === COVERAGE_TYPES.WEDDING_NIKKAH || type === COVERAGE_TYPES.WEDDING_DAY, quantity: (type === COVERAGE_TYPES.WEDDING_NIKKAH || type === COVERAGE_TYPES.WEDDING_DAY) ? 1 : 0 },
+      { id: 'drone_videographer', selected: false, quantity: 0 },
     ],
   }
 }
@@ -363,6 +366,7 @@ export function createEmptyQuotation(company = 'naj') {
           roles: [
             { id: 'photographer', selected: true, quantity: 1 },
             { id: 'videographer', selected: true, quantity: 1 },
+            { id: 'drone_videographer', selected: false, quantity: 0 },
           ],
         },
         {
@@ -376,6 +380,7 @@ export function createEmptyQuotation(company = 'naj') {
           roles: [
             { id: 'photographer', selected: true, quantity: 1 },
             { id: 'videographer', selected: true, quantity: 1 },
+            { id: 'drone_videographer', selected: false, quantity: 0 },
           ],
         },
       ],
@@ -399,7 +404,7 @@ export function createEmptyQuotation(company = 'naj') {
 }
 
 export function getServiceDisplayName(serviceId, photoQuantity, leafCount) {
-  const allServices = [...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES]
+  const allServices = [...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES, ...FEWDAYS_SERVICES]
   const service = allServices.find((s) => s.id === serviceId)
   if (!service) return ''
   if (service.hasPhotoQuantity && photoQuantity) {

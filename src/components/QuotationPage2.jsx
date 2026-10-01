@@ -9,7 +9,7 @@ import {
   getActiveRoles,
   groupCoveragesBySide,
 } from '../utils/quotation'
-import { PAYMENT_TERMS, TEAM_ROLES, SERVICES, PIKTORIA_SERVICES, LITHE_ADS_SERVICES, FEWDAYS_SERVICES, FEWDAYS_TEAM_ROLES } from '../constants/quotation'
+import { PAYMENT_TERMS, TEAM_ROLES, SERVICES, PIKTORIA_SERVICES, LITHE_ADS_SERVICES, FEWDAYS_SERVICES, FEWDAYS_TEAM_ROLES, LITHE_ADS_TEAM_ROLES } from '../constants/quotation'
 import { useAuth } from '../context/AuthContext'
 import piktoriaPage2Bg from '../assets/piktoria_page2_clean_bg.png'
 import fewdaysPage2Bg from '../assets/fewdays_page2_clean_bg.png'
@@ -41,7 +41,11 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
   const totalActiveCoverages = coverages.filter((c) => getActiveRoles(c).length > 0).length
   const centeredClass = totalActiveCoverages > 3 ? 'overview-centered' : ''
 
-  const getRoleLabel = (roleId) => TEAM_ROLES.find((r) => r.id === roleId)?.label || roleId
+  const getRoleLabel = (roleId) =>
+    LITHE_ADS_TEAM_ROLES.find((r) => r.id === roleId)?.label ||
+    FEWDAYS_TEAM_ROLES.find((r) => r.id === roleId)?.label ||
+    TEAM_ROLES.find((r) => r.id === roleId)?.label ||
+    roleId
 
   const renderEventList = (eventCoverages) => {
     const activeCoverages = eventCoverages.filter((c) => getActiveRoles(c).length > 0)
@@ -115,11 +119,13 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
                     <div className="litheads-event-title">{eventTitle}</div>
                     {activeRoles.map((role) => {
                       const roleLabel =
-                        role.id === 'photographer' || role.id.includes('photo')
-                          ? 'Photographer'
-                          : role.id === 'videographer' || role.id.includes('video') || role.id.includes('cine')
-                            ? 'Videographer'
-                            : getRoleLabel(role.id)
+                        role.id === 'drone_videographer'
+                          ? 'Drone Videographer'
+                          : role.id === 'photographer'
+                            ? 'Photographer'
+                            : role.id === 'videographer'
+                              ? 'Videographer'
+                              : getRoleLabel(role.id)
                       return (
                         <div key={role.id} className="litheads-event-role">
                           {role.quantity} {roleLabel}
