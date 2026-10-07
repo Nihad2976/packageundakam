@@ -26,7 +26,7 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
     quotation.groomName,
     quotation.brideName,
   )
-  const selectedServices = getSelectedServices(quotation.services)
+  const selectedServices = getSelectedServices(quotation.services, company)
   const coverages = quotation.coverages || []
   const groupedCoverages = groupCoveragesBySide(coverages)
 

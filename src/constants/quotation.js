@@ -92,6 +92,7 @@ export const PIKTORIA_SERVICES = [
     hasPhotoQuantity: true,
   },
   { id: 'wedding_highlights', name: 'Wedding Highlights Video – 3–5 Minutes', category: 'video' },
+  { id: 'wedding_full_length', name: 'Wedding Full Length Video (10+ min)', category: 'video' },
   { id: 'piktoria_album', name: '40-Leaf Wedding Album', category: 'photo', hasLeafCount: true, defaultLeaves: 40 },
   { id: 'mini_album', name: 'Mini Photo Album', category: 'photo' },
   { id: 'couple_mini_wedding_album', name: 'Couple Mini Wedding Album', category: 'photo' },

@@ -403,8 +403,9 @@ export function createEmptyQuotation(company = 'naj') {
   }
 }
 
-export function getServiceDisplayName(serviceId, photoQuantity, leafCount) {
-  const allServices = [...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES, ...FEWDAYS_SERVICES]
+export function getServiceDisplayName(serviceId, photoQuantity, leafCount, company) {
+  const serviceList = company ? getServicesForCompany(company) : []
+  const allServices = [...serviceList, ...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES, ...FEWDAYS_SERVICES]
   const service = allServices.find((s) => s.id === serviceId)
   if (!service) return ''
   if (service.hasPhotoQuantity && photoQuantity) {
@@ -426,13 +427,13 @@ export function getServiceDisplayName(serviceId, photoQuantity, leafCount) {
   return service.name
 }
 
-export function getSelectedServices(services) {
+export function getSelectedServices(services, company) {
   if (!Array.isArray(services)) return []
   return services
     .filter((s) => s.selected && s.quantity > 0)
     .map((s) => ({
       ...s,
-      displayName: s.customTitle || getServiceDisplayName(s.id, s.photoQuantity, s.leafCount),
+      displayName: s.customTitle || getServiceDisplayName(s.id, s.photoQuantity, s.leafCount, company),
     }))
 }
 
