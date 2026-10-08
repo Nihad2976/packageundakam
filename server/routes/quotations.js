@@ -86,22 +86,47 @@ router.use(authMiddleware)
 router.use(checkBlockedMiddleware)
 
 router.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   if (req.user?.role === 'admin' || req.user?.company === 'admin') {
     return res.json([])
   }
-  const comp = req.user.company || 'naj'
-  const quotations = readQuotations(comp)
-    .filter((q) => q.completed !== false)
-    .map((q) => ({
+  const comp = req.query.company || req.user.company || 'naj'
+  const primaryQuotations = readQuotations(comp)
+
+  const seenIds = new Set()
+  const combined = []
+
+  const addQuotation = (q, c) => {
+    if (!q || seenIds.has(q.id)) return
+    if (q.completed === false) return
+    seenIds.add(q.id)
+    combined.push({
       id: q.id,
       displayName: getDisplayName(q),
       updatedAt: q.updatedAt,
       userId: q.userId,
-      company: comp,
-    }))
-    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      company: q.company || c,
+    })
+  }
 
-  res.json(quotations)
+  // 1. Add quotations for this company
+  for (const q of primaryQuotations) {
+    addQuotation(q, comp)
+  }
+
+  // 2. Also include quotations created by this user across other companies
+  for (const otherComp of ['naj', 'piktoria', 'litheads', 'fewdays']) {
+    if (otherComp === comp) continue
+    const otherList = readQuotations(otherComp)
+    for (const q of otherList) {
+      if (q.userId === req.user.id) {
+        addQuotation(q, otherComp)
+      }
+    }
+  }
+
+  combined.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+  res.json(combined)
 })
 
 router.get('/:id', (req, res) => {

@@ -19,7 +19,11 @@ async function request(path, options = {}) {
     ...options.headers,
   }
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+  const res = await fetch(`${API_BASE}${path}`, {
+    cache: 'no-store',
+    ...options,
+    headers,
+  })
   const data = await res.json().catch(() => ({}))
 
   if (!res.ok) {
@@ -40,7 +44,7 @@ export const api = {
 
   verify: () => request('/auth/verify'),
 
-  getQuotations: () => request('/quotations'),
+  getQuotations: (company) => request(company ? `/quotations?company=${company}` : '/quotations'),
 
   getQuotation: (id) => request(`/quotations/${id}`),
 
@@ -74,7 +78,7 @@ export const api = {
   },
 
   // Invoice APIs
-  getInvoices: () => request('/invoices'),
+  getInvoices: (company) => request(company ? `/invoices?company=${company}` : '/invoices'),
 
   getInvoice: (id) => request(`/invoices/${id}`),
 

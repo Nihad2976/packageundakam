@@ -56,25 +56,50 @@ router.use(authMiddleware)
 router.use(checkBlockedMiddleware)
 
 router.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   if (req.user?.role === 'admin' || req.user?.company === 'admin') {
     return res.json([])
   }
-  const comp = req.user.company || 'naj'
-  const invoices = readInvoices(comp)
-    .filter((i) => i.completed !== false)
-    .map((i) => ({
+  const comp = req.query.company || req.user.company || 'naj'
+  const primaryInvoices = readInvoices(comp)
+
+  const seenIds = new Set()
+  const combined = []
+
+  const addInvoice = (i, c) => {
+    if (!i || seenIds.has(i.id)) return
+    if (i.completed === false) return
+    seenIds.add(i.id)
+    combined.push({
       id: i.id,
       displayName: getDisplayName(i),
       subTotal: i.subTotal || 0,
       balance: i.balance || 0,
       updatedAt: i.updatedAt,
       userId: i.userId,
-      company: comp,
+      company: i.company || c,
       type: 'invoice',
-    }))
-    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    })
+  }
 
-  res.json(invoices)
+  // 1. Add invoices for this company
+  for (const i of primaryInvoices) {
+    addInvoice(i, comp)
+  }
+
+  // 2. Also include invoices created by this user across other companies
+  for (const otherComp of ['naj', 'piktoria', 'litheads', 'fewdays']) {
+    if (otherComp === comp) continue
+    const otherList = readInvoices(otherComp)
+    for (const i of otherList) {
+      if (i.userId === req.user.id) {
+        addInvoice(i, otherComp)
+      }
+    }
+  }
+
+  combined.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+  res.json(combined)
 })
 
 router.get('/:id', (req, res) => {

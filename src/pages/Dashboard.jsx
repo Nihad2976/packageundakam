@@ -19,9 +19,16 @@ export default function Dashboard() {
 
   const loadData = () => {
     setLoading(true)
+    const activeComp = company || user?.company
     Promise.all([
-      api.getQuotations().catch(() => []),
-      api.getInvoices().catch(() => []),
+      api.getQuotations(activeComp).catch((err) => {
+        console.error('Failed to load quotations:', err)
+        return []
+      }),
+      api.getInvoices(activeComp).catch((err) => {
+        console.error('Failed to load invoices:', err)
+        return []
+      }),
     ])
       .then(([qData, iData]) => {
         setQuotations(qData.map((item) => ({ ...item, itemType: 'quotation' })))
