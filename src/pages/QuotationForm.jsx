@@ -14,6 +14,7 @@ import {
   FORM_STEPS,
   LEAF_OPTIONS,
   MONTHS,
+  TIME_INTERVALS_12H,
 } from '../constants/quotation'
 import {
   createEmptyQuotation,
@@ -22,6 +23,7 @@ import {
   buildGreeting,
   getDayWithSuffix,
   parseMonthAndDay,
+  formatCoverageTiming,
 } from '../utils/quotation'
 import { api } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
@@ -326,6 +328,9 @@ function CoverageStep({ data, onChange, company }) {
                 (coverage.type === COVERAGE_TYPES.CUSTOM
                   ? 'Custom Event'
                   : COVERAGE_LABELS[coverage.type])}
+              {isLitheAds && formatCoverageTiming(coverage.startTime, coverage.endTime)
+                ? ` ${formatCoverageTiming(coverage.startTime, coverage.endTime)}`
+                : ''}
             </h3>
             <button
               type="button"
@@ -460,6 +465,48 @@ function CoverageStep({ data, onChange, company }) {
                       boxSizing: 'border-box',
                     }}
                   />
+                </div>
+
+                <div className="form-field-sm" style={{ flex: '0 0 140px', minWidth: '120px' }}>
+                  <label htmlFor={`coverage-start-time-${coverage.id}`}>Start Time</label>
+                  <select
+                    id={`coverage-start-time-${coverage.id}`}
+                    value={coverage.startTime || ''}
+                    onChange={(e) => updateCoverage(coverage.id, { startTime: e.target.value })}
+                    className="select-input"
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <option value="">Start Time</option>
+                    {TIME_INTERVALS_12H.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-field-sm" style={{ flex: '0 0 140px', minWidth: '120px' }}>
+                  <label htmlFor={`coverage-end-time-${coverage.id}`}>End Time</label>
+                  <select
+                    id={`coverage-end-time-${coverage.id}`}
+                    value={coverage.endTime || ''}
+                    onChange={(e) => updateCoverage(coverage.id, { endTime: e.target.value })}
+                    className="select-input"
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <option value="">End Time</option>
+                    {TIME_INTERVALS_12H.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </>
             ) : (
@@ -651,7 +698,7 @@ function ServicesStep({ data, onChange, company }) {
       ? data.services.map((s) => {
           if (s.id !== serviceId) return s
           const selected = !s.selected
-          return { ...s, selected, quantity: selected ? 1 : 0 }
+          return { ...s, selected, quantity: selected ? (s.quantity && s.quantity > 0 ? s.quantity : 1) : 0 }
         })
       : [...(data.services || []), { id: serviceId, selected: true, quantity: 1 }]
     onChange({
@@ -710,15 +757,20 @@ function ServicesStep({ data, onChange, company }) {
     const currentLeaves = service.leafCount || serviceDef.defaultLeaves || (isLitheAds || currentCompany === 'piktoria' ? 40 : 30)
 
     let displayName = service.customTitle || serviceDef.name
-    if (!service.customTitle && serviceDef.hasLeafCount) {
-      if (isLitheAds) {
-        displayName = `${currentLeaves * 2} Pages Wedding Album`
-      } else if (currentCompany === 'piktoria') {
-        displayName = `${currentLeaves}-Leaf Wedding Album`
-      } else if (currentCompany === 'fewdays') {
-        displayName = `${currentLeaves} Leaf Premium Luster Laminated Album`
-      } else {
-        displayName = `${currentLeaves} Leaf Premium Album`
+    if (!service.customTitle) {
+      if (isLitheAds && (serviceDef.id === 'colour_graded_images' || serviceDef.id === 'graded_photos')) {
+        const raw = String(service.photoQuantity || '200').trim().replace(/\+$/, '')
+        displayName = `${raw || '200'}+ Graded Photos`
+      } else if (serviceDef.hasLeafCount) {
+        if (isLitheAds) {
+          displayName = `${currentLeaves * 2} Pages Wedding Album`
+        } else if (currentCompany === 'piktoria') {
+          displayName = `${currentLeaves}-Leaf Wedding Album`
+        } else if (currentCompany === 'fewdays') {
+          displayName = `${currentLeaves} Leaf Premium Luster Laminated Album`
+        } else {
+          displayName = `${currentLeaves} Leaf Premium Album`
+        }
       }
     }
 
@@ -737,10 +789,18 @@ function ServicesStep({ data, onChange, company }) {
             {serviceDef.hasPhotoQuantity && (
               <input
                 type="text"
+                inputMode="numeric"
                 className="photo-qty-input"
-                value={service.photoQuantity || ''}
-                onChange={(e) => setPhotoQuantity(serviceDef.id, e.target.value)}
-                placeholder="e.g. 200+"
+                value={
+                  service.photoQuantity !== undefined
+                    ? (isLitheAds ? String(service.photoQuantity).replace(/\+$/, '') : service.photoQuantity)
+                    : (isLitheAds ? '200' : '')
+                }
+                onChange={(e) => {
+                  const val = isLitheAds ? e.target.value.replace(/[^\d]/g, '') : e.target.value
+                  setPhotoQuantity(serviceDef.id, val)
+                }}
+                placeholder={isLitheAds ? '200' : 'e.g. 200+'}
               />
             )}
             {serviceDef.hasLeafCount && (
@@ -759,7 +819,13 @@ function ServicesStep({ data, onChange, company }) {
             )}
             {!serviceDef.hasPhotoQuantity && !serviceDef.hasLeafCount && !isLitheAds && (
               <QuantityControl
-                value={service.quantity}
+                value={service.quantity || 1}
+                onChange={(qty) => setQuantity(serviceDef.id, qty)}
+              />
+            )}
+            {isLitheAds && (
+              <QuantityControl
+                value={service.quantity || 1}
                 onChange={(qty) => setQuantity(serviceDef.id, qty)}
               />
             )}
@@ -912,6 +978,43 @@ export default function QuotationForm() {
     api
       .getQuotation(id)
       .then((q) => {
+        let loadedCoverages = q.coverages || []
+        const currentComp = q.company || company
+        if (currentComp === 'litheads') {
+          loadedCoverages = loadedCoverages.map((cov) => {
+            const roles = cov.roles ? [...cov.roles] : []
+            const hasLegacy = roles.some((r) => r.id === 'photographer' || r.id === 'videographer')
+            if (hasLegacy) {
+              const legacyPhoto = roles.find((r) => r.id === 'photographer')
+              const legacyVideo = roles.find((r) => r.id === 'videographer')
+              const newRoles = []
+              if (legacyPhoto?.selected) {
+                newRoles.push({ id: 'traditional_photographer', selected: true, quantity: legacyPhoto.quantity || 1 })
+              }
+              if (legacyVideo?.selected) {
+                newRoles.push({ id: 'traditional_videographer', selected: true, quantity: legacyVideo.quantity || 1 })
+              }
+              roles.forEach((r) => {
+                if (r.id !== 'photographer' && r.id !== 'videographer') {
+                  newRoles.push(r)
+                }
+              })
+              return { ...cov, roles: newRoles }
+            }
+            return cov
+          })
+        }
+
+        let loadedServices = q.services
+        if (currentComp === 'litheads' && Array.isArray(loadedServices)) {
+          loadedServices = loadedServices.map((s) => {
+            if ((s.id === 'colour_graded_images' || s.id === 'graded_photos') && !s.photoQuantity) {
+              return { ...s, photoQuantity: '200' }
+            }
+            return s
+          })
+        }
+
         setData({
           clientType: q.clientType,
           clientName: q.clientName || '',
@@ -921,10 +1024,10 @@ export default function QuotationForm() {
           brideName: q.brideName || '',
           package: q.package,
           price: q.price || '',
-          services: q.services,
-          coverages: q.coverages || [],
+          services: loadedServices,
+          coverages: loadedCoverages,
           completed: q.completed,
-          company: q.company || company,
+          company: currentComp,
           events: q.events || [],
           deliverables: q.deliverables || [],
         })

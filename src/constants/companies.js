@@ -164,8 +164,8 @@ export const COMPANY_CONFIGS = {
       '20% after receiving output',
     ],
     defaultServices: [
-      { id: 'wedding_album_80p', name: '80 Pages wedding album', category: 'photo', hasLeafCount: true, defaultLeaves: 40 },
-      { id: 'colour_graded_images', name: 'Whole images will be colour graded', category: 'photo' },
+      { id: 'wedding_album_80p', name: '80 Pages Wedding Album', category: 'photo', hasLeafCount: true, defaultLeaves: 40 },
+      { id: 'colour_graded_images', name: '200+ Graded Photos', category: 'photo', hasPhotoQuantity: true, defaultQuantity: '200+' },
       { id: 'online_gallery', name: 'Online photo gallery', category: 'other' },
       { id: 'usb_hard_drive', name: 'Usb hard drive', category: 'other' },
       { id: 'wedding_highlights_lithe', name: 'Wedding highlight video (approx 5-10 min)', category: 'video' },

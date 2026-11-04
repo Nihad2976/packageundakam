@@ -143,14 +143,16 @@ export const PIKTORIA_PACKAGE_PRESETS = {
 }
 
 export const LITHE_ADS_TEAM_ROLES = [
-  { id: 'photographer', label: 'Photographer' },
-  { id: 'videographer', label: 'Videographer' },
+  { id: 'candid_photographer', label: 'Candid Photographer' },
+  { id: 'traditional_photographer', label: 'Traditional Photographer' },
+  { id: 'candid_videographer', label: 'Candid Videographer' },
+  { id: 'traditional_videographer', label: 'Traditional Videographer' },
   { id: 'drone_videographer', label: 'Drone Videographer' },
 ]
 
 export const LITHE_ADS_SERVICES = [
   { id: 'wedding_album_80p', name: '80 Pages Wedding Album', category: 'deliverable', hasLeafCount: true, defaultLeaves: 40 },
-  { id: 'colour_graded_images', name: 'Whole Images Will Be Colour Graded', category: 'deliverable' },
+  { id: 'colour_graded_images', name: '200+ Graded Photos', category: 'deliverable', hasPhotoQuantity: true, defaultQuantity: '200+' },
   { id: 'online_gallery', name: 'Online Photo Gallery', category: 'deliverable' },
   { id: 'usb_hard_drive', name: 'Usb Hard Drive', category: 'deliverable' },
   { id: 'wedding_highlights_lithe', name: 'Wedding Highlight Video (Approx 5–10 Min)', category: 'deliverable' },
@@ -300,3 +302,20 @@ export const MONTHS = [
   'November',
   'December',
 ]
+
+export function generateTimeIntervals() {
+  const times = []
+  const periods = ['AM', 'PM']
+  for (let p = 0; p < 2; p++) {
+    const period = periods[p]
+    for (let h = 0; h < 12; h++) {
+      const hour = h === 0 ? 12 : h
+      times.push(`${hour}:00 ${period}`)
+      times.push(`${hour}:30 ${period}`)
+    }
+  }
+  return times
+}
+
+export const TIME_INTERVALS_12H = generateTimeIntervals()
+

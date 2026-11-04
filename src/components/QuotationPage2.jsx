@@ -3,6 +3,7 @@ import {
   formatPrice,
   formatLitheTotal,
   formatLithePackageTitle,
+  formatCoverageTiming,
   getCoverageDateLabel,
   getSelectedServices,
   getCoverageLabel,
@@ -111,7 +112,9 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
               {coverages.map((coverage) => {
                 const eventName = getCoverageLabel(coverage)
                 const eventDate = getCoverageDateLabel(coverage)
-                const eventTitle = eventDate ? `${eventDate} ${eventName}` : eventName
+                const timingStr = formatCoverageTiming(coverage.startTime, coverage.endTime)
+                const eventTitleWithTiming = timingStr ? `${eventName} ${timingStr}` : eventName
+                const eventTitle = eventDate ? `${eventDate} ${eventTitleWithTiming}` : eventTitleWithTiming
                 const activeRoles = getActiveRoles(coverage)
 
                 return (
@@ -119,13 +122,21 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
                     <div className="litheads-event-title">{eventTitle}</div>
                     {activeRoles.map((role) => {
                       const roleLabel =
-                        role.id === 'drone_videographer'
-                          ? 'Drone Videographer'
-                          : role.id === 'photographer'
-                            ? 'Photographer'
-                            : role.id === 'videographer'
-                              ? 'Videographer'
-                              : getRoleLabel(role.id)
+                        role.id === 'candid_photographer'
+                          ? 'Candid Photographer'
+                          : role.id === 'traditional_photographer'
+                            ? 'Traditional Photographer'
+                            : role.id === 'candid_videographer'
+                              ? 'Candid Videographer'
+                              : role.id === 'traditional_videographer'
+                                ? 'Traditional Videographer'
+                                : role.id === 'drone_videographer'
+                                  ? 'Drone Videographer'
+                                  : role.id === 'photographer'
+                                    ? 'Photographer'
+                                    : role.id === 'videographer'
+                                      ? 'Videographer'
+                                      : getRoleLabel(role.id)
                       return (
                         <div key={role.id} className="litheads-event-role">
                           {role.quantity} {roleLabel}
@@ -143,9 +154,14 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
             <div className="litheads-deliverables-section">
               <div className="litheads-section-heading">Deliverables</div>
               <ul className="litheads-deliverables-list">
-                {deliverables.map((service) => (
-                  <li key={service.id}>{service.displayName}</li>
-                ))}
+                {deliverables.map((service) => {
+                  const qtyText = service.quantity > 1 ? ` ×${service.quantity}` : ''
+                  return (
+                    <li key={service.id}>
+                      {service.displayName}{qtyText}
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           )}
@@ -155,9 +171,14 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
             <div className="litheads-addons-section">
               <div className="litheads-section-heading">Complementary add-ons with the package</div>
               <ul className="litheads-addons-list">
-                {addons.map((addon) => (
-                  <li key={addon.id}>{addon.displayName}</li>
-                ))}
+                {addons.map((addon) => {
+                  const qtyText = addon.quantity > 1 ? ` ×${addon.quantity}` : ''
+                  return (
+                    <li key={addon.id}>
+                      {addon.displayName}{qtyText}
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           )}

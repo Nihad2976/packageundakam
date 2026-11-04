@@ -201,6 +201,15 @@ export function formatLithePackageHeading(coverages) {
 
 export const formatLithePackageTitle = formatLithePackageHeading
 
+export function formatCoverageTiming(startTime, endTime) {
+  const start = startTime?.trim() || ''
+  const end = endTime?.trim() || ''
+  if (start && end) return `(${start} – ${end})`
+  if (start) return `(${start})`
+  if (end) return `(${end})`
+  return ''
+}
+
 export function createServiceSelection(serviceId, quantity = 1, company = 'naj') {
   const allServices = [...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES, ...FEWDAYS_SERVICES]
   const service = allServices.find((s) => s.id === serviceId)
@@ -223,8 +232,10 @@ export function buildPresetServices(packageType, company = 'naj') {
       id: service.id,
       selected: isSelected,
       quantity: isSelected ? 1 : 0,
-      photoQuantity: service.hasPhotoQuantity ? (company === 'piktoria' ? '100+' : DEFAULT_PHOTO_QUANTITY) : undefined,
-      leafCount: service.hasLeafCount ? (company === 'piktoria' || company === 'fewdays' ? 40 : 30) : undefined,
+      photoQuantity: service.hasPhotoQuantity
+        ? (company === 'litheads' ? '200' : company === 'piktoria' ? '100+' : DEFAULT_PHOTO_QUANTITY)
+        : undefined,
+      leafCount: service.hasLeafCount ? (company === 'piktoria' || company === 'litheads' || company === 'fewdays' ? 40 : 30) : undefined,
     }
   })
 }
@@ -274,10 +285,14 @@ export function createEmptyCoverage(type = COVERAGE_TYPES.BRIDE_EVE, customName 
       month,
       day,
       date: date || `${month.slice(0, 3)} ${getDayWithSuffix(day)}`,
+      startTime: '',
+      endTime: '',
       side: actualSide,
       roles: [
-        { id: 'photographer', selected: true, quantity: 1 },
-        { id: 'videographer', selected: true, quantity: 1 },
+        { id: 'candid_photographer', selected: false, quantity: 0 },
+        { id: 'traditional_photographer', selected: true, quantity: 1 },
+        { id: 'candid_videographer', selected: false, quantity: 0 },
+        { id: 'traditional_videographer', selected: true, quantity: 1 },
         { id: 'drone_videographer', selected: false, quantity: 0 },
       ],
     }
@@ -362,10 +377,14 @@ export function createEmptyQuotation(company = 'naj') {
           month: 'October',
           day: 8,
           date: 'Oct 8th',
+          startTime: '',
+          endTime: '',
           side: COVERAGE_SIDES.BOTH,
           roles: [
-            { id: 'photographer', selected: true, quantity: 1 },
-            { id: 'videographer', selected: true, quantity: 1 },
+            { id: 'candid_photographer', selected: false, quantity: 0 },
+            { id: 'traditional_photographer', selected: true, quantity: 1 },
+            { id: 'candid_videographer', selected: false, quantity: 0 },
+            { id: 'traditional_videographer', selected: true, quantity: 1 },
             { id: 'drone_videographer', selected: false, quantity: 0 },
           ],
         },
@@ -376,10 +395,14 @@ export function createEmptyQuotation(company = 'naj') {
           month: 'October',
           day: 9,
           date: 'Oct 9th',
+          startTime: '',
+          endTime: '',
           side: COVERAGE_SIDES.BOTH,
           roles: [
-            { id: 'photographer', selected: true, quantity: 1 },
-            { id: 'videographer', selected: true, quantity: 1 },
+            { id: 'candid_photographer', selected: true, quantity: 1 },
+            { id: 'traditional_photographer', selected: true, quantity: 1 },
+            { id: 'candid_videographer', selected: true, quantity: 1 },
+            { id: 'traditional_videographer', selected: true, quantity: 1 },
             { id: 'drone_videographer', selected: false, quantity: 0 },
           ],
         },
@@ -408,6 +431,10 @@ export function getServiceDisplayName(serviceId, photoQuantity, leafCount, compa
   const allServices = [...serviceList, ...SERVICES, ...PIKTORIA_SERVICES, ...LITHE_ADS_SERVICES, ...FEWDAYS_SERVICES]
   const service = allServices.find((s) => s.id === serviceId)
   if (!service) return ''
+  if (company === 'litheads' && (serviceId === 'colour_graded_images' || serviceId === 'graded_photos')) {
+    const raw = String(photoQuantity || '200').trim().replace(/\+$/, '')
+    return `${raw || '200'}+ Graded Photos`
+  }
   if (service.hasPhotoQuantity && photoQuantity) {
     return `${photoQuantity} ${service.name}`
   }
