@@ -744,7 +744,7 @@ function ServicesStep({ data, onChange, company }) {
     : {
         video: serviceList.filter((s) => s.category === 'video'),
         photo: serviceList.filter((s) => s.category === 'photo'),
-        other: serviceList.filter((s) => s.category === 'other'),
+        other: serviceList.filter((s) => s.category === 'other' || (!s.category || (s.category !== 'video' && s.category !== 'photo'))),
       }
 
   const renderService = (serviceDef) => {
@@ -817,7 +817,7 @@ function ServicesStep({ data, onChange, company }) {
                 ))}
               </select>
             )}
-            {!serviceDef.hasPhotoQuantity && !serviceDef.hasLeafCount && !isLitheAds && (
+            {!serviceDef.hasPhotoQuantity && !serviceDef.hasLeafCount && !serviceDef.noQuantity && !isLitheAds && (
               <QuantityControl
                 value={service.quantity || 1}
                 onChange={(qty) => setQuantity(serviceDef.id, qty)}

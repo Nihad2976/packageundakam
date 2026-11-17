@@ -49,6 +49,7 @@ export const COMPANY_CONFIGS = {
       { id: 'table_calendar', name: 'Table Calendar', category: 'photo' },
       { id: 'live_qr', name: 'Live QR Code Photo Gallery (Day & Reception)', category: 'other' },
       { id: 'soft_copy', name: 'Soft Copy (Provided via Pendrive)', category: 'other' },
+      { id: 'live_screening_auditorium', name: 'Live Screening in Auditorium', category: 'other', noQuantity: true },
       { id: 'drone_videographer', name: 'Drone Videographer', category: 'video' },
     ],
     packagePresets: {

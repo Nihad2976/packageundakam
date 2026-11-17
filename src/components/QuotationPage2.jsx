@@ -484,7 +484,7 @@ export default function QuotationPage2({ quotation, scale = 1, id = 'quotation-p
           <ul className="pdf-deliverables-list">
             {selectedServices.map((service) => {
               const serviceDef = SERVICES.find((s) => s.id === service.id)
-              const showQty = service.quantity > 1 && !serviceDef?.hasPhotoQuantity
+              const showQty = service.quantity > 1 && !serviceDef?.hasPhotoQuantity && !serviceDef?.noQuantity
               return (
                 <li key={service.id}>
                   {service.displayName}
