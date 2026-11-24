@@ -761,6 +761,10 @@ function ServicesStep({ data, onChange, company }) {
       if (isLitheAds && (serviceDef.id === 'colour_graded_images' || serviceDef.id === 'graded_photos')) {
         const raw = String(service.photoQuantity || '200').trim().replace(/\+$/, '')
         displayName = `${raw || '200'}+ Graded Photos`
+      } else if (currentCompany === 'piktoria' && serviceDef.id === 'graded_photos') {
+        const qty = (service.photoQuantity && String(service.photoQuantity).trim()) || '100+'
+        const cleanName = serviceDef.name.replace(/^\d+\+?\s*/, '')
+        displayName = `${qty} ${cleanName}`
       } else if (serviceDef.hasLeafCount) {
         if (isLitheAds) {
           displayName = `${currentLeaves * 2} Pages Wedding Album`
@@ -794,13 +798,13 @@ function ServicesStep({ data, onChange, company }) {
                 value={
                   service.photoQuantity !== undefined
                     ? (isLitheAds ? String(service.photoQuantity).replace(/\+$/, '') : service.photoQuantity)
-                    : (isLitheAds ? '200' : '')
+                    : (isLitheAds ? '200' : currentCompany === 'piktoria' ? '100+' : '')
                 }
                 onChange={(e) => {
                   const val = isLitheAds ? e.target.value.replace(/[^\d]/g, '') : e.target.value
                   setPhotoQuantity(serviceDef.id, val)
                 }}
-                placeholder={isLitheAds ? '200' : 'e.g. 200+'}
+                placeholder={isLitheAds ? '200' : currentCompany === 'piktoria' ? 'e.g. 100+' : 'e.g. 200+'}
               />
             )}
             {serviceDef.hasLeafCount && (
@@ -1010,6 +1014,14 @@ export default function QuotationForm() {
           loadedServices = loadedServices.map((s) => {
             if ((s.id === 'colour_graded_images' || s.id === 'graded_photos') && !s.photoQuantity) {
               return { ...s, photoQuantity: '200' }
+            }
+            return s
+          })
+        }
+        if (currentComp === 'piktoria' && Array.isArray(loadedServices)) {
+          loadedServices = loadedServices.map((s) => {
+            if (s.id === 'graded_photos' && !s.photoQuantity) {
+              return { ...s, photoQuantity: '100+' }
             }
             return s
           })

@@ -101,7 +101,7 @@ export const COMPANY_CONFIGS = {
       { id: 'reels_30s', name: 'Reels – 30 Seconds', category: 'video' },
       {
         id: 'graded_photos',
-        name: '100+ Professionally Edited Photos – Digital Album',
+        name: 'Professionally Edited Photos – Digital Album',
         category: 'photo',
         hasPhotoQuantity: true,
         defaultQuantity: '100+',

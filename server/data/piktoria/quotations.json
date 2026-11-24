@@ -125,5 +125,114 @@
     "createdAt": "2026-09-09T11:06:41.947Z",
     "updatedAt": "2026-09-09T11:06:41.947Z",
     "pdfPath": null
+  },
+  {
+    "id": "627e9e70-9698-442e-aaa9-14ebbdf69a9a",
+    "userId": "piktoria-wedding-default-user-id",
+    "clientType": "bride",
+    "groomName": "",
+    "brideName": "nihad",
+    "package": "with_album",
+    "packageTitle": "",
+    "price": "9555",
+    "services": [
+      {
+        "id": "reels_30s",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "graded_photos",
+        "selected": true,
+        "quantity": 1,
+        "photoQuantity": "300+"
+      },
+      {
+        "id": "wedding_highlights",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "wedding_full_length",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "piktoria_album",
+        "selected": true,
+        "quantity": 1,
+        "leafCount": 40
+      },
+      {
+        "id": "mini_album",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "couple_mini_wedding_album",
+        "selected": false,
+        "quantity": 0
+      },
+      {
+        "id": "photo_frame",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "calendar",
+        "selected": true,
+        "quantity": 1
+      },
+      {
+        "id": "soft_copy",
+        "selected": true,
+        "quantity": 1
+      }
+    ],
+    "coverages": [
+      {
+        "id": "1dc83ea2-9e82-4fa7-a30b-5c98c7bebb06",
+        "type": "bride_eve",
+        "customName": "",
+        "date": "",
+        "side": "bride",
+        "roles": [
+          {
+            "id": "traditional_photographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "traditional_cinematographer",
+            "selected": true,
+            "quantity": 1
+          },
+          {
+            "id": "candid_photographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "candid_cinematographer",
+            "selected": false,
+            "quantity": 0
+          },
+          {
+            "id": "drone_videographer",
+            "selected": false,
+            "quantity": 0
+          }
+        ]
+      }
+    ],
+    "completed": true,
+    "company": "piktoria",
+    "createdAt": "2026-11-24T13:35:20.651Z",
+    "updatedAt": "2026-11-24T13:44:00.781Z",
+    "pdfPath": null,
+    "clientName": "",
+    "greeting": "",
+    "events": [],
+    "deliverables": []
   }
 ]

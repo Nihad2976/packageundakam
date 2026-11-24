@@ -435,8 +435,11 @@ export function getServiceDisplayName(serviceId, photoQuantity, leafCount, compa
     const raw = String(photoQuantity || '200').trim().replace(/\+$/, '')
     return `${raw || '200'}+ Graded Photos`
   }
-  if (service.hasPhotoQuantity && photoQuantity) {
-    return `${photoQuantity} ${service.name}`
+  if (service.hasPhotoQuantity) {
+    const defaultQty = company === 'piktoria' ? '100+' : DEFAULT_PHOTO_QUANTITY
+    const rawQty = (photoQuantity && String(photoQuantity).trim()) || defaultQty
+    const cleanName = service.name.replace(/^\d+\+?\s*/, '')
+    return `${rawQty} ${cleanName}`
   }
   if (serviceId === 'wedding_album_80p') {
     const leaves = leafCount || 40
